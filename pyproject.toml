@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "chili"
+version = "1.0.0"
+description = "Chili is a dataclass support library. It is providing simple and fast hydration and extraction interfaces for dataclasses."
+authors = [
+    "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
+]
+license = "MIT"
+readme = "README.md"
+
+homepage = "https://github.com/kodemore/chili"
+repository = "https://github.com/kodemore/chili"
+documentation = "https://github.com/kodemore/chili"
+
+keywords = ["dataclasses", "dataclass", "mapping", "dto", "hydration", "extraction"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Utilities",
+]
+
+# Requirements
+[tool.poetry.dependencies]
+python = "^3.7"
+typing_extensions = "^3.7.4"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.1.0"
+pytest-cov = "^2.5"
+pytest-mock = "^1.9"
+black = "^20.8b1"
+isort = "^5.6.4"
+mypy = "^0.812"
+pylint = "^2.7.2"
