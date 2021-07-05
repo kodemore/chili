@@ -432,5 +432,5 @@ If attributes in your dataclass do not specify the type value will be hydrated i
 extracts its members to a dictionary, so the returned data can be stored as json object orn easily serialised 
 to any other format.
 
-> Please note `Chili` is not a data validation library, even thou `Chili` performs some validation and casting
-> behind the scenes but only to ensure type and behaviour consistency.
+> Please note `Chili` is not a data validation library, although `Chili` performs some validation and casting
+> behind the scenes it does it only to ensure type consistency.
