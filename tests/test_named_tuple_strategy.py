@@ -1,13 +1,13 @@
 from collections import namedtuple
 from typing import List, NamedTuple, Tuple
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_named_tuple() -> None:
     # given
     Pet = namedtuple("Pet", ["age", "name"])
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     # when
     pet = strategy.hydrate([12, "Bobek"])
@@ -21,7 +21,7 @@ def test_hydrate_named_tuple() -> None:
 def test_hydrate_named_tuple_with_defaults() -> None:
     # given
     Pet = namedtuple("Pet", ["age", "name", "tags"], defaults=[0, None, []])
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     # when
     pet = strategy.hydrate([12])
@@ -39,7 +39,7 @@ def test_hydrate_class_based_named_tuple() -> None:
         name: str
         tags: list = []
 
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     # when
     pet = strategy.hydrate(["10", "Bobek"])
@@ -53,7 +53,7 @@ def test_hydrate_class_based_named_tuple() -> None:
 def test_extract_named_tuple() -> None:
     # given
     Pet = namedtuple("Pet", ["age", "name"])
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     # when
     result = strategy.extract(Pet(12, "Bobek"))
@@ -70,7 +70,7 @@ def test_extract_class_based_tuple() -> None:
         name: str
         tags: List[int] = []
 
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     # when
     result = strategy.extract(Pet("10", "Bobek", ["0"]))

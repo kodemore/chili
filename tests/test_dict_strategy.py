@@ -1,11 +1,11 @@
 from typing import Dict
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_generic_dict() -> None:
     # given
-    strategy = get_strategy_for(Dict)
+    strategy = registry.get_for(Dict)
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when
@@ -17,7 +17,7 @@ def test_hydrate_generic_dict() -> None:
 
 def test_hydrate_built_in_dict() -> None:
     # given
-    strategy = get_strategy_for(dict)
+    strategy = registry.get_for(dict)
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when
@@ -29,7 +29,7 @@ def test_hydrate_built_in_dict() -> None:
 
 def test_hydrate_annotated_dict() -> None:
     # given
-    strategy = get_strategy_for(Dict[str, str])
+    strategy = registry.get_for(Dict[str, str])
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when
@@ -41,7 +41,7 @@ def test_hydrate_annotated_dict() -> None:
 
 def test_extract_annotated_dict() -> None:
     # given
-    strategy = get_strategy_for(Dict[str, str])
+    strategy = registry.get_for(Dict[str, str])
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when

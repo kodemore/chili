@@ -12,6 +12,7 @@ with unwanted abstractions.
 - complex dataclass initialisation and extraction
 - supports most python's types found in `typing` package (including generics)
 - does not pollute your codebase
+- supports adding custom types
 
 ## Installation
 
@@ -25,30 +26,6 @@ poetry add chili
 ```
 
 # Usage
-
-
-## API
-
-### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_) -> _`T`_
-
-`init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
-with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
-attributes in order to be properly interpreted. 
-
-This function support complex and nested hydration, which means if your dataclass aggregates other dataclasses 
-or defines complex typing, `init_dataclass` function will respect your type annotations and will cast values 
-to match the defined types. 
-
-If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
-### **`chili.asdict`**(**`value`**) -> _`Dict[str, typing.Any]`_
-
-`asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
-extracts its members to a dictionary, so the returned data can be stored as json object orn easily serialised 
-to any other format.
-
-> Please note `Chili` is not a data validation library, although `Chili` performs some validation and casting
-> behind the scenes it does it only to ensure type consistency.
-
 
 ## Initialising a dataclass
 
@@ -179,6 +156,38 @@ boo_dict = asdict(boo)
 
 assert "tags" not in boo_dict
 ```
+
+## Declaring custom hydrators
+
+If you work with types that are neither dataclasses nor directly supported by `Chili`, you can define your own
+hydrator to customise how the type is initialised and how it should be de-initialised by declaring a subclass of
+`chili.hydration.HydrationStrategy` and registering it, like below:
+
+```python
+from chili import hydrate, registry, extract, HydrationStrategy
+import  typing
+
+class MyType:
+    def __init__(self, value):
+        self.value = value
+
+class MyHydrator(HydrationStrategy):
+    def extract(self, value):  # value will be instance of MyType
+        return value.value
+        
+    def hydrate(self, value):
+        return MyType(value)
+
+# register our custom type in the hydration registry    
+registry.add(MyType, MyHydrator())
+
+# usage
+assert isinstance(hydrate("hello", MyType), MyType)
+assert isinstance(hydrate("hello", typing.Optional[MyType]), MyType) # this will work as well with optional types
+
+assert extract(MyType("hello")) == "hello"
+```
+
 
 ## Working with `Generic` types
 
@@ -434,3 +443,39 @@ Only parametrised generic classes are supported, dataclasses that extends other 
 ### `typing.Union`
 
 Limited support for Unions.
+
+## API
+
+### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`) -> _`T`_
+
+Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
+if strict mode is set to `True` it raises `InvalidValueError`
+
+### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`) -> _`typing.Any`_
+
+Extracts given value into primitive or set of primitives. If extraction fails, it returns passed value as a result, if
+strict type 
+
+Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
+if strict mode is set to `True` it raises `InvalidValueError`
+
+### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_) -> _`T`_
+
+`init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
+with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
+attributes in order to be properly interpreted. 
+
+This function support complex and nested hydration, which means if your dataclass aggregates other dataclasses 
+or defines complex typing, `init_dataclass` function will respect your type annotations and will cast values 
+to match the defined types. 
+
+If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
+### **`chili.asdict`**(**`value`**) -> _`Dict[str, typing.Any]`_
+
+`asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
+extracts its members to a dictionary, so the returned data can be stored as json object orn easily serialised 
+to any other format.
+
+> Please note `Chili` is not a data validation library, although `Chili` performs some validation and casting
+> behind the scenes it does it only to ensure type consistency.
+

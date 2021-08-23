@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Generic, List, TypeVar, cast
+from typing import Generic, List, TypeVar
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -31,7 +31,7 @@ class TwoParameters(Generic[T, U]):
 
 def test_hydrate_generic_dataclass() -> None:
     # given
-    strategy = get_strategy_for(MyList[Pet])
+    strategy = registry.get_for(MyList[Pet])
     raw_data = {"count": 2, "pets": [{"name": "Bobek"}, {"name": "Boo"}]}
 
     # when
@@ -49,7 +49,7 @@ def test_hydrate_dataclass_extending_generic_dataclass() -> None:
     class MySuperList(MyList, Generic[T]):
         ...
 
-    strategy = get_strategy_for(MySuperList[Pet])
+    strategy = registry.get_for(MySuperList[Pet])
     raw_data = {"count": 2, "pets": [{"name": "Bobek"}, {"name": "Boo"}]}
 
     # when
@@ -67,7 +67,7 @@ def test_hydrate_generic_as_dataclass_attribute() -> None:
     class PetAggregator:
         pet_list: MyList[Pet]
 
-    strategy = get_strategy_for(PetAggregator)
+    strategy = registry.get_for(PetAggregator)
     raw_data = {"pet_list": {"count": 2, "pets": [{"name": "Bobek"}, {"name": "Boo"}]}}
 
     # when
@@ -81,7 +81,7 @@ def test_hydrate_generic_as_dataclass_attribute() -> None:
 
 def test_extract_generic_dataclass() -> None:
     # given
-    strategy = get_strategy_for(MyList[Pet])
+    strategy = registry.get_for(MyList[Pet])
 
     data = MyList[Pet](count=2, pets=[Pet("Bobek"), Pet("Boo")])
 
@@ -93,7 +93,7 @@ def test_extract_generic_dataclass() -> None:
 
 def test_generic_class_with_multiple_parameters() -> None:
     # given
-    strategy = get_strategy_for(TwoParameters[Pet, Tag])
+    strategy = registry.get_for(TwoParameters[Pet, Tag])
     raw_data = {
         "list_a": [{"name": "Bobek"}, {"name": "Boo"}],
         "list_b": [{"name": "Good boy"}, {"name": "Cute"}],

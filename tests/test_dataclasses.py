@@ -229,7 +229,7 @@ def test_uses_cache_when_initialising_dataclass() -> None:
     cache_storage = {}
 
     # when
-    with patch("chili.dataclasses.CACHED_HYDRATION_STRATEGIES") as cache:
+    with patch("chili.hydration.registry._cached") as cache:
         cache.__getitem__.side_effect = cache_storage.__getitem__
         cache.__contains__.side_effect = cache_storage.__contains__
         cache.__setitem__.side_effect = cache_storage.__setitem__

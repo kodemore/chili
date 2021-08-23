@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pytest
 from typing import Any, Optional, Type
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 @dataclass
@@ -28,7 +28,7 @@ def test_hydrate_optional_types(
     typedef: Type, passed_input: Any, expected_output: Any
 ) -> None:
     # given
-    strategy = get_strategy_for(typedef)
+    strategy = registry.get_for(typedef)
 
     # when
     result = strategy.hydrate(passed_input)

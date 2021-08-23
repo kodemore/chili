@@ -1,12 +1,12 @@
 from typing import List
 from typing_extensions import TypedDict
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_generic_typed_dict() -> None:
     # given
-    strategy = get_strategy_for(TypedDict)  # <- I know this does not make sense
+    strategy = registry.get_for(TypedDict)  # <- I know this does not make sense
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when
@@ -25,7 +25,7 @@ def test_hydrate_typed_dict() -> None:
         tags: List[str]
 
     # given
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     input_data = {"age": "4", "name": "Bobek", "tags": [True, "dog", "pet"]}
 
@@ -44,7 +44,7 @@ def test_extract_typed_dict() -> None:
         tags: List[str]
 
     # given
-    strategy = get_strategy_for(Pet)
+    strategy = registry.get_for(Pet)
 
     input_data = {"age": "4", "name": "Bobek", "tags": tuple([True, "dog", "pet"])}
 

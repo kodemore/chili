@@ -1,12 +1,12 @@
 from collections import deque
 from typing import Deque
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_generic_deque() -> None:
     # given
-    strategy = get_strategy_for(deque)
+    strategy = registry.get_for(deque)
     items = ["a", 1, 2.1, True]
 
     # when
@@ -19,7 +19,7 @@ def test_hydrate_generic_deque() -> None:
 
 def test_hydrate_annotated_deque() -> None:
     # given
-    strategy = get_strategy_for(Deque[str])
+    strategy = registry.get_for(Deque[str])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -32,7 +32,7 @@ def test_hydrate_annotated_deque() -> None:
 
 def test_extract_generic_deque() -> None:
     # given
-    strategy = get_strategy_for(deque)
+    strategy = registry.get_for(deque)
     items = deque(["a", 1, 2.1])
 
     # when
@@ -45,7 +45,7 @@ def test_extract_generic_deque() -> None:
 
 def test_extract_annotated_deque() -> None:
     # given
-    strategy = get_strategy_for(Deque[str])
+    strategy = registry.get_for(Deque[str])
     items = deque(["a", 1, 2.1])
 
     # when

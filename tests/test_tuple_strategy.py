@@ -1,11 +1,11 @@
 from typing import Tuple
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_generic_tuple() -> None:
     # given
-    strategy = get_strategy_for(tuple)
+    strategy = registry.get_for(tuple)
     items = ["a", 1, 2.1, True]
 
     # when
@@ -17,7 +17,7 @@ def test_hydrate_generic_tuple() -> None:
 
 def test_hydrate_typed_tuple() -> None:
     # given
-    strategy = get_strategy_for(Tuple[str, int, str, int])
+    strategy = registry.get_for(Tuple[str, int, str, int])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -29,7 +29,7 @@ def test_hydrate_typed_tuple() -> None:
 
 def test_hydrate_ellipsis_tuple() -> None:
     # given
-    strategy = get_strategy_for(Tuple[str, ...])
+    strategy = registry.get_for(Tuple[str, ...])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -41,7 +41,7 @@ def test_hydrate_ellipsis_tuple() -> None:
 
 def test_extract_simple_tuple() -> None:
     # given
-    strategy = get_strategy_for(tuple)
+    strategy = registry.get_for(tuple)
 
     items = ("a", 1, 2.1, True)
 
@@ -54,7 +54,7 @@ def test_extract_simple_tuple() -> None:
 
 def test_extract_typed_tuple() -> None:
     # given
-    strategy = get_strategy_for(Tuple[str, int, str, int])
+    strategy = registry.get_for(Tuple[str, int, str, int])
     items = ("a", 1, 2.1, True)
 
     # when
@@ -66,7 +66,7 @@ def test_extract_typed_tuple() -> None:
 
 def test_extract_ellipsis_tuple() -> None:
     # given
-    strategy = get_strategy_for(Tuple[str, ...])
+    strategy = registry.get_for(Tuple[str, ...])
     items = ("a", 1, 2.1, True)
 
     # when

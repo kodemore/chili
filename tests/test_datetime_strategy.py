@@ -1,11 +1,11 @@
 import datetime
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_date() -> None:
     # given
-    strategy = get_strategy_for(datetime.date)
+    strategy = registry.get_for(datetime.date)
     date = "2010-10-01"
 
     # when
@@ -20,7 +20,7 @@ def test_hydrate_date() -> None:
 
 def test_extract_date() -> None:
     # given
-    strategy = get_strategy_for(datetime.date)
+    strategy = registry.get_for(datetime.date)
     date = datetime.date(year=2010, month=10, day=1)
 
     # when
@@ -32,7 +32,7 @@ def test_extract_date() -> None:
 
 def test_hydrate_time() -> None:
     # given
-    strategy = get_strategy_for(datetime.time)
+    strategy = registry.get_for(datetime.time)
     time = "15:21:11"
 
     # when
@@ -47,7 +47,7 @@ def test_hydrate_time() -> None:
 
 def test_extract_time() -> None:
     # given
-    strategy = get_strategy_for(datetime.time)
+    strategy = registry.get_for(datetime.time)
     time = datetime.time(hour=15, minute=21, second=11)
 
     # when
@@ -59,7 +59,7 @@ def test_extract_time() -> None:
 
 def test_hydrate_datetime() -> None:
     # given
-    strategy = get_strategy_for(datetime.datetime)
+    strategy = registry.get_for(datetime.datetime)
     time = "2010-10-01T15:21:11"
 
     # when
@@ -77,7 +77,7 @@ def test_hydrate_datetime() -> None:
 
 def test_extract_datetime() -> None:
     # given
-    strategy = get_strategy_for(datetime.datetime)
+    strategy = registry.get_for(datetime.datetime)
     time = datetime.datetime(year=2010, month=10, day=1, hour=15, minute=21, second=11)
 
     # when
@@ -89,7 +89,7 @@ def test_extract_datetime() -> None:
 
 def test_hydrate_timedelta() -> None:
     # given
-    strategy = get_strategy_for(datetime.timedelta)
+    strategy = registry.get_for(datetime.timedelta)
     time = "P1W3DT2H"
 
     # when
@@ -103,7 +103,7 @@ def test_hydrate_timedelta() -> None:
 
 def test_extract_timedelta() -> None:
     # given
-    strategy = get_strategy_for(datetime.timedelta)
+    strategy = registry.get_for(datetime.timedelta)
     time = datetime.timedelta(days=10, seconds=7200)
 
     # when

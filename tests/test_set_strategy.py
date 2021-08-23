@@ -1,11 +1,11 @@
 from typing import Set
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_generic_set() -> None:
     # given
-    strategy = get_strategy_for(set)
+    strategy = registry.get_for(set)
     items = ["a", 1, 2.1, True]
 
     # when
@@ -17,7 +17,7 @@ def test_hydrate_generic_set() -> None:
 
 def test_hydrate_annotated_set() -> None:
     # given
-    strategy = get_strategy_for(Set[str])
+    strategy = registry.get_for(Set[str])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -29,7 +29,7 @@ def test_hydrate_annotated_set() -> None:
 
 def test_extract_generic_set() -> None:
     # given
-    strategy = get_strategy_for(set)
+    strategy = registry.get_for(set)
     items = {"a", 1, 2.1}
 
     # when
@@ -42,7 +42,7 @@ def test_extract_generic_set() -> None:
 
 def test_extract_annotated_set() -> None:
     # given
-    strategy = get_strategy_for(Set[str])
+    strategy = registry.get_for(Set[str])
     items = {"a", 1, 2.1}
 
     # when

@@ -1,7 +1,7 @@
 import pytest
 from enum import Enum, IntEnum
 
-from chili.dataclasses import get_strategy_for
+from chili import registry
 
 
 def test_hydrate_enum() -> None:
@@ -12,7 +12,7 @@ def test_hydrate_enum() -> None:
         GREEN = "green"
         ORANGE = "orange"
 
-    strategy = get_strategy_for(Colors)
+    strategy = registry.get_for(Colors)
 
     # when
     red = strategy.hydrate("red")
@@ -33,7 +33,7 @@ def test_hydrate_int_enum() -> None:
         GREEN = 3
         ORANGE = 4
 
-    strategy = get_strategy_for(Colors)
+    strategy = registry.get_for(Colors)
 
     # when
     red = strategy.hydrate(1)
@@ -54,7 +54,7 @@ def test_extract_enum() -> None:
         GREEN = "green"
         ORANGE = "orange"
 
-    strategy = get_strategy_for(Colors)
+    strategy = registry.get_for(Colors)
     red = strategy.hydrate("red")
     orange = strategy.hydrate("orange")
 
@@ -75,7 +75,7 @@ def test_fail_hydrating_invalid_enum() -> None:
         GREEN = "green"
         ORANGE = "orange"
 
-    strategy = get_strategy_for(Colors)
+    strategy = registry.get_for(Colors)
 
     # when
     with pytest.raises(ValueError) as error:
