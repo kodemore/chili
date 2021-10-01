@@ -1,16 +1,18 @@
 from collections.abc import Iterable
 from typing import Union, Dict, Callable, Any, List
 
+MappingInfo = Dict[str, Union[Dict, str, Callable]]
+
 
 class MappingStrategy:
-    def __init__(self, data: Union[Dict[str, Any], List[Dict[str, Any]]], mapping: Dict[str, Union[Dict, str]]):
+    def __init__(self, data: Any, mapping: MappingInfo):
         self.mapping = mapping
         self._data = data
 
-    def map(self) -> Dict[str, Any]:
+    def map(self) -> Any:
         return self._map(self._data, self.mapping)
 
-    def _map(self, section: Union[List, Dict[str, Any]], mapping: Dict[str, Union[Dict, str, Callable]]) -> Union[List, Dict]:
+    def _map(self, section: Union[List, Dict], mapping: MappingInfo) -> Any:
         if not isinstance(section, dict) and isinstance(section, Iterable):
             return [self._map(item, mapping) for item in iter(section)]
 

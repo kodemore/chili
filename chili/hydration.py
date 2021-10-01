@@ -33,7 +33,7 @@ from .iso_datetime import (
     parse_iso_time,
     timedelta_to_iso_duration,
 )
-from .mapping import MappingStrategy
+from .mapping import MappingStrategy, MappingInfo
 from .typing import (
     get_dataclass_fields,
     get_origin_type,
@@ -603,7 +603,7 @@ class StrategyRegistry:
 registry = StrategyRegistry()
 
 
-def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: Union[Callable, Dict, str] = None) -> T:
+def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: MappingInfo = None) -> T:
     if mapping is not None:
         mapping_strategy = MappingStrategy(data, mapping)
         data = mapping_strategy.map()
@@ -612,7 +612,7 @@ def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: Union[C
     return strategy.hydrate(data)
 
 
-def extract(data: Any, strict: bool = True, mapping: Union[Callable, Dict, str] = None) -> Any:
+def extract(data: Any, strict: bool = True, mapping: MappingInfo = None) -> Any:
     strategy = registry.get_for((type(data)), strict)
 
     if mapping is not None:
