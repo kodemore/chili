@@ -23,7 +23,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libev-dev
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
@@ -31,7 +30,7 @@ jobs:
         run: |
           poetry run isort -c setup.cfg
           poetry run black --line-length=120 --target-version py38 chili
-          mapping.py:11
+          poetry run mypy chili
       - name: Test with codecoverage
         run: |
           poetry run pytest --cov=./ --cov-report=xml
