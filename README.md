@@ -161,13 +161,14 @@ assert "tags" not in boo_dict
 
 ## Data mapping
 
-Sometimes you might run into scenarios that data coming from different sources needs to be remapped before you can hydrate
-it to your dataclass. There might be different reasons:
+Sometimes you might run into scenarios that data coming from different sources needs to be remapped 
+before you can hydrate it to your dataclass. There might be several reasons for that:
 - input data is using camelCase convention
 - input data is using different naming
 - input data is missing values
 
-In all those cases you can pass `mapping` attribute to `init_dataclass/hydrate` or `asdict/extract` functions.
+In all those cases you can pass `mapping` attribute to `init_dataclass/hydrate` or `asdict/extract` functions to perform
+mapping before hydration or after extraction dataclass.
 
 ### Field name mapping
 Please consider the following example of simple name mapping:
