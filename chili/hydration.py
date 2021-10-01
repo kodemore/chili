@@ -26,13 +26,14 @@ from typing import (
 
 from typing_extensions import Protocol, TypedDict
 
-from chili.iso_datetime import (
+from .iso_datetime import (
     parse_iso_date,
     parse_iso_datetime,
     parse_iso_duration,
     parse_iso_time,
     timedelta_to_iso_duration,
 )
+from .mapping import MappingStrategy
 from .typing import (
     get_dataclass_fields,
     get_origin_type,
@@ -602,13 +603,22 @@ class StrategyRegistry:
 registry = StrategyRegistry()
 
 
-def hydrate(data: Any, type_name: Type[T], strict: bool = True) -> T:
+def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: Union[Callable, Dict, str] = None) -> T:
+    if mapping is not None:
+        mapping_strategy = MappingStrategy(data, mapping)
+        data = mapping_strategy.map()
+
     strategy = registry.get_for(type_name, strict)
     return strategy.hydrate(data)
 
 
-def extract(data: Any, strict: bool = True) -> Any:
+def extract(data: Any, strict: bool = True, mapping: Union[Callable, Dict, str] = None) -> Any:
     strategy = registry.get_for((type(data)), strict)
+
+    if mapping is not None:
+        mapping_strategy = MappingStrategy(strategy.extract(data), mapping)
+        return mapping_strategy.map()
+
     return strategy.extract(data)
 
 

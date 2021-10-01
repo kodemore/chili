@@ -1,4 +1,5 @@
-# Chili [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+class List:
+pass# Chili [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 Chili is an extensible dataclass support library.
 It contains helper functions to simplify initialising and extracting complex dataclasses.
 This might come handy when you want to transform your request's data to well-defined and easy to understand objects 
@@ -13,6 +14,7 @@ with unwanted abstractions.
 - supports most python's types found in `typing` package (including generics)
 - does not pollute your codebase
 - supports adding custom types
+- data mapping
 
 ## Installation
 
@@ -155,6 +157,95 @@ boo = Pet(name="Boo", tags=["pet", "hamster", "powerful!"])
 boo_dict = asdict(boo)
 
 assert "tags" not in boo_dict
+```
+
+## Data mapping
+
+Sometimes you might run into scenarios that data coming from different sources needs to be remapped before you can hydrate
+it to your dataclass. There might be different reasons:
+- input data is using camelCase convention
+- input data is using different naming
+- input data is missing values
+
+In all those cases you can pass `mapping` attribute to `init_dataclass/hydrate` or `asdict/extract` functions.
+
+### Field name mapping
+Please consider the following example of simple name mapping:
+
+```python
+from dataclasses import dataclass
+from typing import List
+
+import chili
+
+input_data = {
+    "petName": "Bobik",
+    "petAge": "12",
+    "taggedWith": [
+        {"tagName": "smart"}, 
+        {"tagName": "dog"}, 
+        {"tagName": "happy"}, 
+    ]
+}
+
+@dataclass
+class Pet:
+    name: str
+    age: int
+    tags: List[dict]
+    
+
+mapping = {
+    "petName": "name",  # `petName` will be renamed to `name`, which corresponds to `Pet.name` field
+    "petAge": "age", 
+    "taggedWith": {  # `taggedWith` is a nested structure so its new name is defined in `__name__` key
+        "__name__": "tags",
+        "tagName": "name", # `tagName` will be renamed to `name` which corresponds to `Pet.tags[{index}].name`
+    }
+}
+
+bobik = chili.hydrate(input_data, Pet, mapping=mapping)
+print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])
+```
+
+### Callable mappings
+
+We can also use lambdas and functions in mapping to achieve the same result like in previous example.
+
+```python
+from dataclasses import dataclass
+from typing import List, Tuple
+
+import chili
+
+def map_pet_tags(value: List, _) -> Tuple[str, List]:
+    return "tags", [{"name": item["tagName"]} for item in value]
+
+input_data = {
+    "petName": "Bobik",
+    "petAge": "12",
+    "taggedWith": [
+        {"tagName": "smart"}, 
+        {"tagName": "dog"}, 
+        {"tagName": "happy"}, 
+    ]
+}
+
+@dataclass
+class Pet:
+    name: str
+    age: int
+    tags: List[dict]
+    
+
+mapping = {
+    "petName": "name",
+    "petAge": lambda value, _: ("age", value),  # first returned value is the new field name, the second is its value , 
+    "taggedWith": map_pet_tags,
+}
+
+bobik = chili.hydrate(input_data, Pet, mapping=mapping)
+print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])
 ```
 
 ## Declaring custom hydrators
