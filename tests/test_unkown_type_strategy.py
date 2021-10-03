@@ -9,6 +9,7 @@ def test_use_dummy_strategy_for_unknown_type() -> None:
     class SomeUnknownType:
         def __init__(self, value: str):
             self.value = value
+
     obj = SomeUnknownType("test")
 
     # when

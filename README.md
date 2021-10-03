@@ -169,7 +169,7 @@ before you can hydrate it to your dataclass. There might be several reasons for 
 In all those cases you can pass `mapping` attribute to `init_dataclass/hydrate` or `asdict/extract` functions to perform
 mapping before hydration or after extraction dataclass.
 
-### Field name mapping
+### Simple mapping
 Please consider the following example of simple name mapping:
 
 ```python
@@ -180,37 +180,37 @@ import chili
 
 input_data = {
     "petName": "Bobik",
-    "petAge": "12",
+    "age": "12",
     "taggedWith": [
-        {"tagName": "smart"}, 
-        {"tagName": "dog"}, 
-        {"tagName": "happy"}, 
+        {"tagName": "smart"},
+        {"tagName": "dog"},
+        {"tagName": "happy"},
     ]
 }
+
 
 @dataclass
 class Pet:
     name: str
     age: int
     tags: List[dict]
-    
 
-mapping = {
-    "petName": "name",  # `petName` will be renamed to `name`, which corresponds to `Pet.name` field
-    "petAge": "age", 
-    "taggedWith": {  # `taggedWith` is a nested structure so its new name is defined in `__name__` key
-        "__name__": "tags",
-        "tagName": "name", # `tagName` will be renamed to `name` which corresponds to `Pet.tags[{index}].name`
-    }
-}
+
+mapping = chili.Mapper({
+    "name": "petName",  # `petName` will be renamed to `name`, which corresponds to `Pet.name` field
+    "age": True,  # we just pass true value to include field "as is"
+    "tags": chili.KeyMapper("taggedWith", {  # `taggedWith` is a complex structure we want to map, so we have to use KeyMapper 
+        "name": "tagName",  # `tagName` will be renamed to `name` which corresponds to `Pet.tags[{index}].name`
+    }),
+})
 
 bobik = chili.hydrate(input_data, Pet, mapping=mapping)
 print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])
 ```
 
-### Callable mappings
+### Mappings with custom behaviour
 
-We can also use lambdas and functions in mapping to achieve the same result like in previous example.
+We can also use lambdas and functions in mapping to achieve the same result as in the previous example.
 
 ```python
 from dataclasses import dataclass
@@ -218,31 +218,34 @@ from typing import List, Tuple
 
 import chili
 
-def map_pet_tags(value: List, _) -> Tuple[str, List]:
-    return "tags", [{"name": item["tagName"]} for item in value]
+
+def map_pet_tags(value: List) -> List:
+    return [{"name": item["tagName"]} for item in value]
+
 
 input_data = {
     "petName": "Bobik",
     "petAge": "12",
     "taggedWith": [
-        {"tagName": "smart"}, 
-        {"tagName": "dog"}, 
-        {"tagName": "happy"}, 
+        {"tagName": "smart"},
+        {"tagName": "dog"},
+        {"tagName": "happy"},
     ]
 }
+
 
 @dataclass
 class Pet:
     name: str
     age: int
     tags: List[dict]
-    
 
-mapping = {
-    "petName": "name",
-    "petAge": lambda value, _: ("age", value),  # first returned value is the new field name, the second is its value , 
-    "taggedWith": map_pet_tags,
-}
+
+mapping = chili.Mapper({
+    "name": "petName",
+    "age": lambda value: value["petAge"],  # callables will always receive current's scope data as input 
+    "tags": chili.KeyMapper("taggedWith", map_pet_tags)
+})
 
 bobik = chili.hydrate(input_data, Pet, mapping=mapping)
 print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])

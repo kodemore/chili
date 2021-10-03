@@ -14,9 +14,7 @@ def test_hydrate_generic_collection_ordered_dict() -> None:
 
     # then
     assert isinstance(result, OrderedDict)
-    assert result == OrderedDict(
-        {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
-    )
+    assert result == OrderedDict({"int": 1, "float": 2.2, "bool": True, "string": "Hello"})
 
 
 def test_hydrate_annotated_ordered_dict() -> None:

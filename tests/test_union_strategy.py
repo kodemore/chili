@@ -50,7 +50,6 @@ def test_hydrate_optional_custom() -> None:
             self.value = value
 
     class CustomStrategy(HydrationStrategy):
-
         def hydrate(self, value: Any) -> Any:
             return Custom(value)
 
@@ -65,4 +64,3 @@ def test_hydrate_optional_custom() -> None:
 
     # then
     assert isinstance(result, Custom)
-

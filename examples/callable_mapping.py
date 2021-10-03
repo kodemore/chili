@@ -4,8 +4,8 @@ from typing import List, Tuple
 import chili
 
 
-def map_pet_tags(value: List, _) -> Tuple[str, List]:
-    return "tags", [{"name": item["tagName"]} for item in value]
+def map_pet_tags(value: List) -> List:
+    return [{"name": item["tagName"]} for item in value]
 
 
 input_data = {
@@ -27,10 +27,10 @@ class Pet:
 
 
 mapping = {
-    "petName": "name",
-    "petAge": lambda value, _: ("age", value),  # first returned value is the new field name, the second is its value ,
-    "taggedWith": map_pet_tags,
+    "name": "petName",
+    "age": lambda value: value["petAge"],  # first returned value is the new field name, the second is its value ,
+    "tags": chili.KeyMapper("taggedWith", map_pet_tags),
 }
 
-bobik = chili.hydrate(input_data, Pet, mapping=mapping)
+bobik = chili.hydrate(input_data, Pet, mapping=chili.Mapper(mapping))
 print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])
