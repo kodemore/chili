@@ -33,7 +33,7 @@ from .iso_datetime import (
     parse_iso_time,
     timedelta_to_iso_duration,
 )
-from .mapping import MappingStrategy, MappingInfo
+from .mapping import Mapper, MappingScheme
 from .typing import (
     get_dataclass_fields,
     get_origin_type,
@@ -603,21 +603,19 @@ class StrategyRegistry:
 registry = StrategyRegistry()
 
 
-def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: MappingInfo = None) -> T:
+def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: Mapper = None) -> T:
     if mapping is not None:
-        mapping_strategy = MappingStrategy(data, mapping)
-        data = mapping_strategy.map()
+        data = mapping.map(data)
 
     strategy = registry.get_for(type_name, strict)
     return strategy.hydrate(data)
 
 
-def extract(data: Any, strict: bool = True, mapping: MappingInfo = None) -> Any:
+def extract(data: Any, strict: bool = True, mapping: Mapper = None) -> Any:
     strategy = registry.get_for((type(data)), strict)
 
     if mapping is not None:
-        mapping_strategy = MappingStrategy(strategy.extract(data), mapping)
-        return mapping_strategy.map()
+        return mapping.map(strategy.extract(data))
 
     return strategy.extract(data)
 

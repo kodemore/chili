@@ -24,9 +24,7 @@ class Pet:
         [Optional[bool], True, True],
     ],
 )
-def test_hydrate_optional_types(
-    typedef: Type, passed_input: Any, expected_output: Any
-) -> None:
+def test_hydrate_optional_types(typedef: Type, passed_input: Any, expected_output: Any) -> None:
     # given
     strategy = registry.get_for(typedef)
 

@@ -41,9 +41,7 @@ def test_can_make_nested_dataclasses() -> None:
         tags: List[Tag]
 
     # when
-    pet = init_dataclass(
-        {"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet
-    )
+    pet = init_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet)
 
     # then
     assert isinstance(pet, Pet)
@@ -226,6 +224,7 @@ def test_uses_cache_when_initialising_dataclass() -> None:
     @dataclass
     class Item:
         id: int
+
     cache_storage = {}
 
     # when
@@ -244,5 +243,3 @@ def test_uses_cache_when_initialising_dataclass() -> None:
 
         cache.__getitem__.assert_called_with(Item)
         assert cache.__getitem__.call_count == 2
-
-

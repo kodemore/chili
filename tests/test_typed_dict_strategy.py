@@ -10,9 +10,7 @@ def test_hydrate_generic_typed_dict() -> None:
     input_data = {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
 
     # when
-    result = strategy.hydrate(
-        input_data
-    )  # <- But we still should be able to handle it gracefully
+    result = strategy.hydrate(input_data)  # <- But we still should be able to handle it gracefully
 
     # then
     assert result == {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
