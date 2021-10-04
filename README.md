@@ -1,8 +1,8 @@
 # Chili [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 Chili is an extensible dataclass support library.
 It contains helper functions to simplify initialising and extracting complex dataclasses.
-This might come handy when you want to transform your request's data to well-defined and easy to understand objects 
-or when there is a need to hydrate database records.
+This might come in handy when you want to transform your request's data to well-defined and easy to understand objects 
+or when there is a need to hydrate and/or transform database records to desired representation in memory.
 
 Library also ensures type integrity and provides simple interface, which does not pollute your codebase
 with unwanted abstractions.
