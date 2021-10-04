@@ -532,7 +532,7 @@ class StrategyRegistry:
         # Dataclasses
         if is_dataclass(type_name):
             if issubclass(type_name, Generic):  # type: ignore
-                raise ValueError("Cannot automatically hydrate non-parametrised generic classes.")
+                raise ValueError("Cannot automatically hydrate/extract non-parametrised generic classes.")
 
             self._cached[type_name] = DataclassStrategy(type_name)
             return self._cached[type_name]
@@ -543,7 +543,7 @@ class StrategyRegistry:
         if origin_type is None:
             if not isclass(type_name):
                 if strict:
-                    raise ValueError(f"Cannot hydrate type `{type_name}`")
+                    raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
                 return self._builtin_types[Any]  # type: ignore
 
             if is_enum_type(type_name):
@@ -559,7 +559,7 @@ class StrategyRegistry:
                 return self._cached[type_name]
 
             if strict:
-                raise ValueError(f"Cannot hydrate type `{type_name}`")
+                raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
 
             return self._builtin_types[Any]  # type: ignore
 
@@ -572,7 +572,7 @@ class StrategyRegistry:
             # Unknown type, just ignore it
             if not is_optional(type_name):
                 if strict:
-                    raise ValueError(f"Cannot hydrate type `{type_name}`")
+                    raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
                 return self._builtin_types[Any]  # type: ignore
 
             # Optional type

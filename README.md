@@ -540,35 +540,33 @@ Limited support for Unions.
 
 ## API
 
-### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`) -> _`T`_
+### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
-if strict mode is set to `True` it raises `InvalidValueError`
+if strict mode is set to `True` it raises `InvalidValueError`.
 
-### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`) -> _`typing.Any`_
+### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`typing.Any`_
 
 Extracts given value into primitive or set of primitives. If extraction fails, it returns passed value as a result, if
-strict type 
+strict mode is set to `True` it raises `InvalidValueError`.
 
-Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
-if strict mode is set to `True` it raises `InvalidValueError`
-
-### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_) -> _`T`_
+### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 `init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
 with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
-attributes in order to be properly interpreted. 
+attributes in order to be properly interpreted. This rule can be broken if valid mapping is passed to the 
+function.
 
 This function support complex and nested hydration, which means if your dataclass aggregates other dataclasses 
 or defines complex typing, `init_dataclass` function will respect your type annotations and will cast values 
 to match the defined types. 
 
 If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
-### **`chili.asdict`**(**`value`**) -> _`Dict[str, typing.Any]`_
+### **`chili.asdict`**(**`value`**, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`Dict[str, typing.Any]`_
 
 `asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
-extracts its members to a dictionary, so the returned data can be stored as json object orn easily serialised 
-to any other format.
+extracts its members to a dictionary, so the returned data can be stored as json object or easily serialised 
+to any other format. Additionally, `mapping` argument allows changing data representation on the fly.
 
 > Please note `Chili` is not a data validation library, although `Chili` performs some validation and casting
 > behind the scenes it does it only to ensure type consistency.
