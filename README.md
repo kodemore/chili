@@ -9,11 +9,11 @@ with unwanted abstractions.
 
 ## Features
 - extensible and easy to use
-- complex dataclass initialisation and extraction
+- initialisation and extraction for complex dataclasses
 - supports most python's types found in `typing` package (including generics)
 - does not pollute your codebase
 - supports adding custom types
-- data mapping
+- data mapping/transformation with `chili.Mapping`
 
 ## Installation
 
