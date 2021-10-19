@@ -29,6 +29,10 @@ def parse_iso_datetime(value: str) -> datetime:
     else:
         time_part = list(map("".join, zip(*[iter(time_part)] * 2)))
 
+    microseconds_part = date_parts[4]
+    microseconds = microseconds_part.lstrip(".") if microseconds_part else "0"
+    time_part.append(microseconds)
+
     if date_parts[5] and date_parts[5].lower() != "z":
         sign = 1 if date_parts[5][0] == "+" else -1
         hours, minutes = date_parts[5][1:].split(":")
@@ -45,6 +49,7 @@ def parse_iso_datetime(value: str) -> datetime:
         hour=int(time_part[0]),
         minute=int(time_part[1]),
         second=int(time_part[2]),
+        microsecond=int(time_part[3]),
         tzinfo=offset,
     )
 
