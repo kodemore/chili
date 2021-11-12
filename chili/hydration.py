@@ -1,5 +1,6 @@
 import collections
 import datetime
+import sys
 from abc import abstractmethod
 from dataclasses import MISSING, is_dataclass
 from decimal import Decimal
@@ -21,7 +22,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    Union,
+    Union, ForwardRef,
 )
 
 from typing_extensions import Protocol, TypedDict
@@ -89,7 +90,7 @@ class DataclassStrategy(HydrationStrategy):
         return result
 
     def _get_strategy(self, field_type: Type) -> HydrationStrategy:
-        return registry.get_for(field_type)
+        return registry.get_for(field_type, module=self._dataclass_name.__module__)
 
     def _set_strategies(self) -> None:
         fields = get_dataclass_fields(self._dataclass_name)
@@ -120,7 +121,7 @@ class GenericDataclassStrategy(DataclassStrategy):
         super().__init__(type_)
 
     def _get_strategy(self, field_type: Type) -> HydrationStrategy:
-        return registry.get_for(map_generic_type(field_type, self._generic_parameters))
+        return registry.get_for(map_generic_type(field_type, self._generic_parameters), module=self._generic_type.__module__)
 
 
 class DummyStrategy(HydrationStrategy):
@@ -250,7 +251,7 @@ class NamedTupleStrategy(HydrationStrategy):
 
     def _build_type_mapper(self, field_types: Dict[str, Type]) -> None:
         for item_type in field_types.values():
-            self._arg_strategies.append(registry.get_for(item_type))
+            self._arg_strategies.append(registry.get_for(item_type, module=self._class_name.__module__))
 
 
 class EnumStrategy(HydrationStrategy):
@@ -285,7 +286,7 @@ class TypedDictStrategy(HydrationStrategy):
     def __init__(self, type_name: Type):
         self._strategies: Dict[str, HydrationStrategy] = {}
         for key_name, key_type in type_name.__annotations__.items():
-            self._strategies[key_name] = registry.get_for(key_type)
+            self._strategies[key_name] = registry.get_for(key_type, module=type_name.__module__)
 
     def hydrate(self, value: Any) -> Any:
         return {key: self._strategies[key].hydrate(item) for key, item in value.items()}
@@ -516,7 +517,7 @@ class StrategyRegistry:
     def add(self, type_name: Type, strategy: HydrationStrategy):
         self._custom[type_name] = strategy
 
-    def get_for(self, type_name: Type, strict: bool = False) -> HydrationStrategy:
+    def get_for(self, type_name: Type, strict: bool = False, module: Any = None) -> HydrationStrategy:
         # Customized type
         if type_name in self._custom:
             return self._custom[type_name]
@@ -542,6 +543,10 @@ class StrategyRegistry:
         # Other non-generic types
         if origin_type is None:
             if not isclass(type_name):
+                if isinstance(type_name, ForwardRef) and module is not None:
+                    resolved_reference = resolve_forward_reference(module, type_name)
+                    if resolved_reference is not None:
+                        return self.get_for(resolved_reference)
                 if strict:
                     raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
                 return self._builtin_types[Any]  # type: ignore
@@ -593,7 +598,7 @@ class StrategyRegistry:
             if subtype is ...:
                 type_attributes.append(...)
                 continue
-            type_attributes.append(self.get_for(subtype))
+            type_attributes.append(self.get_for(subtype, module=module))
 
         # Generic types
         self._cached[type_name] = self._builtin_generics[origin_type](*type_attributes)
@@ -618,6 +623,14 @@ def extract(data: Any, strict: bool = True, mapping: Mapper = None) -> Any:
         return mapping.map(strategy.extract(data))
 
     return strategy.extract(data)
+
+
+def resolve_forward_reference(module: Any, ref: ForwardRef) -> Any:
+    name = ref.__forward_arg__
+    if name in sys.modules[module].__dict__:
+        return sys.modules[module].__dict__[name]
+
+    return None
 
 
 __all__ = ["registry", "HydrationStrategy", "hydrate", "extract"]
