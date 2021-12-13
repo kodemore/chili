@@ -6,6 +6,7 @@ import pytest
 
 import chili.dataclasses
 from chili import asdict, init_dataclass
+from chili.error import PropertyError
 
 
 def test_can_make_simple_dataclass() -> None:
@@ -53,6 +54,27 @@ def test_can_make_nested_dataclasses() -> None:
     assert pet.tags[1].name == "Brown"
 
 
+def test_can_fail_hydrating_nested_dataclasses() -> None:
+    # given
+    @dataclass
+    class Tag:
+        name: str
+        id: str
+
+    @dataclass
+    class Pet:
+        name: str
+        age: int
+        tags: List[Tag]
+
+    # when
+    with pytest.raises(PropertyError) as error:
+        init_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}]}, Pet)
+
+    # then
+    assert error.value.path == "tags.id"
+
+
 def test_can_extract_nested_dataclasses() -> None:
     # given
     @dataclass
@@ -94,7 +116,8 @@ def test_fail_make_with_missing_property() -> None:
         init_dataclass({"name": "Bobek"}, Pet)
 
     # then
-    assert str(error.value) == "Property `age` is required."
+    assert str(error.value) == "Could not hydrate value, property `age` is missing."
+    assert error.value.path == "age"
 
 
 def test_make_with_default_values() -> None:

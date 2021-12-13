@@ -27,6 +27,8 @@ from typing import (
 
 from typing_extensions import Protocol, TypedDict
 
+from .error import HydrationError, PropertyError, RequiredPropertyError, TypeHydrationError, ExtractionError, \
+    UnsupportedTypeError
 from .iso_datetime import (
     parse_iso_date,
     parse_iso_datetime,
@@ -34,7 +36,7 @@ from .iso_datetime import (
     parse_iso_time,
     timedelta_to_iso_duration,
 )
-from .mapping import Mapper, MappingScheme
+from .mapping import Mapper
 from .typing import (
     get_dataclass_fields,
     get_origin_type,
@@ -49,6 +51,7 @@ from .typing import (
 )
 
 T = TypeVar("T")
+Dataclass = TypeVar("Dataclass")
 
 
 class HydrationStrategy(Protocol):
@@ -81,7 +84,7 @@ class DataclassStrategy(HydrationStrategy):
 
     def extract(self, value: Any) -> Any:
         if not isinstance(value, self._dataclass_name):
-            raise ValueError(f"Passed value must be type of {self._dataclass_name}.")
+            raise TypeHydrationError(type(value), Dataclass)
 
         result = {}
         for name, get in self._getters.items():
@@ -405,7 +408,7 @@ class UnionStrategy(HydrationStrategy):
                 except Exception:
                     continue
 
-            raise ValueError("Could not hydrate passed value.")
+            raise HydrationError(f"Could not hydrate passed value `{value}`.")
 
         # dataclasses
         if value_type is dict:
@@ -423,12 +426,12 @@ class UnionStrategy(HydrationStrategy):
             except Exception:
                 continue
 
-        raise ValueError("Could not hydrate passed value.")
+        raise HydrationError(f"Could not hydrate passed value `{value}`.")
 
     def extract(self, value: Any) -> Any:
         value_type = type(value)
         if value_type not in self.supported_types:
-            raise ValueError("Could not extract passed value.")
+            raise ExtractionError(f"Could not extract passed value `{value}`.")
 
         return registry.get_for(value_type).extract(value)
 
@@ -443,29 +446,51 @@ def set_dataclass_property(
     optional: bool,
 ) -> None:
     if property_name in attributes:
-        setattr(obj, property_name, setter(attributes[property_name]))
+        try:
+            setattr(obj, property_name, setter(attributes[property_name]))
+        except PropertyError as error:
+            raise PropertyError(f"{property_name}.{error.path}") from error
+        except Exception as error:
+            raise error
         return
 
     if callable(default_factory):
-        setattr(obj, property_name, default_factory())
+        try:
+            setattr(obj, property_name, default_factory())
+        except PropertyError as error:
+            raise PropertyError(f"{property_name}.{error.path}") from error
+        except Exception as error:
+            raise error
         return
 
     if default_value is not MISSING:
-        setattr(obj, property_name, default_value)
+        try:
+            setattr(obj, property_name, default_value)
+        except PropertyError as error:
+            raise PropertyError(f"{property_name}.{error.path}") from error
+        except Exception as error:
+            raise error
         return
 
     attribute_value = attributes.get(property_name, MISSING)
 
     if attribute_value is MISSING:
         if optional:
-            setattr(obj, property_name, None)
+            try:
+                setattr(obj, property_name, None)
+            except PropertyError as error:
+                raise PropertyError(f"{property_name}.{error.path}") from error
+            except Exception as error:
+                raise error
             return
-        raise AttributeError(f"Property `{property_name}` is required.")
+        raise RequiredPropertyError(property_name)
 
     try:
         setattr(obj, property_name, setter(attribute_value))
+    except PropertyError as error:
+        raise PropertyError(f"{property_name}.{error.path}") from error
     except Exception as error:
-        raise AttributeError(f"Could not hydrate `{property_name}` property with `{attribute_value}` value.") from error
+        raise PropertyError(property_name) from error
 
 
 StrategyDictionary = Dict[Any, HydrationStrategy]
@@ -533,7 +558,7 @@ class StrategyRegistry:
         # Dataclasses
         if is_dataclass(type_name):
             if issubclass(type_name, Generic):  # type: ignore
-                raise ValueError("Cannot automatically hydrate/extract non-parametrised generic classes.")
+                raise HydrationError(f"Cannot automatically hydrate/extract non-parametrised generic classes `{type_name}`.")
 
             self._cached[type_name] = DataclassStrategy(type_name)
             return self._cached[type_name]
@@ -548,7 +573,7 @@ class StrategyRegistry:
                     if resolved_reference is not None:
                         return self.get_for(resolved_reference)
                 if strict:
-                    raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
+                    raise HydrationError(f"Cannot automatically hydrate/extract type `{type_name}`")
                 return self._builtin_types[Any]  # type: ignore
 
             if is_enum_type(type_name):
@@ -564,7 +589,7 @@ class StrategyRegistry:
                 return self._cached[type_name]
 
             if strict:
-                raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
+                raise UnsupportedTypeError(type_name)
 
             return self._builtin_types[Any]  # type: ignore
 
@@ -577,7 +602,7 @@ class StrategyRegistry:
             # Unknown type, just ignore it
             if not is_optional(type_name):
                 if strict:
-                    raise ValueError(f"Cannot hydrate/extract type `{type_name}`")
+                    raise UnsupportedTypeError(type_name)
                 return self._builtin_types[Any]  # type: ignore
 
             # Optional type
