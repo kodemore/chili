@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chili"
-version = "1.4.0"
+version = "1.5.0"
 description = "Chili is a dataclass support library. It is providing simple and fast hydration and extraction interfaces for dataclasses."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
