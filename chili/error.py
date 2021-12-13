@@ -26,8 +26,9 @@ class TypeHydrationError(HydrationError, TypeError):
 class UnsupportedTypeError(HydrationError, ValueError):
     def __init__(self, type_name: Type):
         self.type_name = type_name
-        super().__init__(f"Passed type `{type_name}` is not supported. "
-                         f"Please custom hydrator in order to use specified type.")
+        super().__init__(
+            f"Passed type `{type_name}` is not supported. " f"Please custom hydrator in order to use specified type."
+        )
 
 
 class PropertyError(HydrationError, AttributeError):

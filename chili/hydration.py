@@ -22,13 +22,20 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    Union, ForwardRef,
+    Union,
+    ForwardRef,
 )
 
 from typing_extensions import Protocol, TypedDict
 
-from .error import HydrationError, PropertyError, RequiredPropertyError, TypeHydrationError, ExtractionError, \
-    UnsupportedTypeError
+from .error import (
+    HydrationError,
+    PropertyError,
+    RequiredPropertyError,
+    TypeHydrationError,
+    ExtractionError,
+    UnsupportedTypeError,
+)
 from .iso_datetime import (
     parse_iso_date,
     parse_iso_datetime,
@@ -84,7 +91,7 @@ class DataclassStrategy(HydrationStrategy):
 
     def extract(self, value: Any) -> Any:
         if not isinstance(value, self._dataclass_name):
-            raise TypeHydrationError(type(value), Dataclass)
+            raise TypeHydrationError(type(value), Dataclass)  # type: ignore
 
         result = {}
         for name, get in self._getters.items():
@@ -124,7 +131,9 @@ class GenericDataclassStrategy(DataclassStrategy):
         super().__init__(type_)
 
     def _get_strategy(self, field_type: Type) -> HydrationStrategy:
-        return registry.get_for(map_generic_type(field_type, self._generic_parameters), module=self._generic_type.__module__)
+        return registry.get_for(
+            map_generic_type(field_type, self._generic_parameters), module=self._generic_type.__module__
+        )
 
 
 class DummyStrategy(HydrationStrategy):
@@ -558,7 +567,9 @@ class StrategyRegistry:
         # Dataclasses
         if is_dataclass(type_name):
             if issubclass(type_name, Generic):  # type: ignore
-                raise HydrationError(f"Cannot automatically hydrate/extract non-parametrised generic classes `{type_name}`.")
+                raise HydrationError(
+                    f"Cannot automatically hydrate/extract non-parametrised generic classes `{type_name}`."
+                )
 
             self._cached[type_name] = DataclassStrategy(type_name)
             return self._cached[type_name]
