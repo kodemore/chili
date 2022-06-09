@@ -56,3 +56,12 @@ class Mapper:
                 raise ValueError(f"Could not map value {value} with provided scheme {item_scheme}")
 
         return result
+
+
+class PersistentMapper(Mapper):
+    def _map(self, data: Dict, scheme: MappingScheme) -> Any:
+        results = super()._map(data, scheme)
+        for key, value in data.items():
+            if key not in results:
+                results[key] = value
+        return results

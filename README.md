@@ -250,7 +250,62 @@ mapping = chili.Mapper({
 bobik = chili.hydrate(input_data, Pet, mapping=mapping)
 print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}])
 ```
+## Mapping with key persistence
 
+You can use the `chili.mapping.PersistentMapper` to keep all keys and their values. 
+> Please not that this will keep all keys, including the nested ones even when using `chili.KeyMapper`. Using a `Callable` is an exception.
+
+```python
+from dataclasses import dataclass
+from typing import List, Tuple
+
+import chili
+
+
+def map_pet_tags(value: List) -> List:
+    return [{"name": item["tagName"]} for item in value]
+
+
+input_data = {
+    "petName": "Bobik",
+    "petAge": "12",
+    "taggedWith": [
+        {"tagName": "smart"},
+        {"tagName": "dog"},
+        {"tagName": "happy"},
+    ]
+}
+
+
+@dataclass
+class Pet:
+    name: str
+    age: int
+    tags: List[dict]
+    taggedWith: List[dict]
+    petAge: str
+    petName: str
+
+
+mapping_nested_persistence = chili.PersistentMapper({
+    "name": "petName",
+    "age": lambda value: value["petAge"],  # callables will always receive current's scope data as input 
+    "tags": chili.KeyMapper("taggedWith", {"name": "tagName"})
+})
+
+bobik = chili.hydrate(input_data, Pet, mapping=mapping)
+print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart', 'tagName': 'smart'}, {'name': 'dog', 'tagName': 'dog'}, {'name': 'happy', 'tagName': 'happy'}], taggedWith=[{'tagName': 'smart'}, {'tagName': 'dog'}, {'tagName': 'happy'}], petAge='12', petName='Bobik')
+
+
+mapping_no_nested_persistence = chili.PersistentMapper({
+    "name": "petName",
+    "age": lambda value: value["petAge"],  # callables will always receive current's scope data as input 
+    "tags": chili.KeyMapper("taggedWith", map_pet_tags)  # using a callable won't persist old nested keys and values
+})
+
+bobik = chili.hydrate(input_data, Pet,   mapping=mapping_no_nested_persistence)
+print(bobik)  # Pet(name='Bobik', age=12, tags=[{'name': 'smart'}, {'name': 'dog'}, {'name': 'happy'}], taggedWith=[{'tagName': 'smart'}, {'tagName': 'dog'}, {'tagName': 'happy'}], petAge='12', petName='Bobik')
+```
 ## Declaring custom hydrators
 
 If you work with types that are neither dataclasses nor directly supported by `Chili`, you can define your own
