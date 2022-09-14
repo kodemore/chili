@@ -13,6 +13,7 @@ Chili ensures type integrity and provides a simple interface to keep your codeba
 - supports forward references out of the box
 - might be extended with custom types
 - data mapping/transformation with `chili.Mapping`
+- fields hiding from serialisation and deserialisation with python's `field` function
 
 ## Installation
 
@@ -123,7 +124,7 @@ class Pet:
         self.tags_length = len(self.tags)
 
 
-boo = init_dataclass({"name": "Boo", "tags": ["hamster", "boo"], "tags_length": 0}, Pet)
+boo = init_dataclass({"name": "Boo", "tags": ["hamster", "boo"]}, Pet)
 
 assert isinstance(boo, Pet)
 assert boo.tags_length == 2
