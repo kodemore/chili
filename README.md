@@ -6,6 +6,7 @@ Chili is an extensible data class support library. Its primary focus is on simpl
 Chili ensures type integrity and provides a simple interface to keep your codebase clean from unwanted abstractions.
 
 ## Features
+- no dependencies besides typing_extensions
 - supports nested data structures
 - understands lists, sets, collections, unions, etc
 - ensures type integrity 
