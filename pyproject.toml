@@ -1,19 +1,7 @@
 [tool.poetry]
-name = "chili"
-version = "1.7.0"
-description = "Chili is a dataclass support library. It is providing simple and fast hydration and extraction interfaces for dataclasses."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
 ]
-license = "MIT"
-readme = "README.md"
-
-homepage = "https://github.com/kodemore/chili"
-repository = "https://github.com/kodemore/chili"
-documentation = "https://github.com/kodemore/chili"
-
-keywords = ["dataclasses", "dataclass", "mapping", "dto", "hydration", "extraction"]
-
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -26,18 +14,28 @@ classifiers = [
     "Topic :: Software Development :: Code Generators",
     "Topic :: Utilities",
 ]
+description = "Chili is a dataclass support library. It is providing simple and fast hydration and extraction interfaces for dataclasses."
+documentation = "https://github.com/kodemore/chili"
+homepage = "https://github.com/kodemore/chili"
+keywords = ["dataclasses", "dataclass", "mapping", "dto", "hydration", "extraction"]
+license = "MIT"
+name = "chili"
+readme = "README.md"
+repository = "https://github.com/kodemore/chili"
+version = "1.7.0"
 
-# Requirements
 [tool.poetry.dependencies]
 python = "^3.8"
 typing-extensions = "^4.2"
 
-
 [tool.poetry.dev-dependencies]
-pytest = "^7.1"
-pytest-cov = "^3.0"
-pytest-mock = "^3.7"
+bandit = "^1.7.4"
 black = "22.3"
+flake8 = "^5.0.4"
 isort = "^5.6.4"
 mypy = "^0.961"
 pylint = "^2.7.2"
+pytest = "^7.1"
+pytest-cov = "^3.0"
+pytest-mock = "^3.7"
+toml-sort = "^0.20.1"

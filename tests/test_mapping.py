@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Any
+from typing import Any, List
 
 import pytest
 
@@ -191,9 +191,7 @@ def test_can_map_nested_dict_without_key_change() -> None:
     # given
     scheme = {
         "name": 1,
-        "tag": {
-            "name": "tagName"
-        },
+        "tag": {"name": "tagName"},
     }
 
     raw_data = {
@@ -212,5 +210,5 @@ def test_can_map_nested_dict_without_key_change() -> None:
         "name": "Pimpek",
         "tag": {
             "name": "puppy",
-        }
+        },
     }

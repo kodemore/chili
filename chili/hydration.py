@@ -13,6 +13,7 @@ from typing import (
     Callable,
     Deque,
     Dict,
+    ForwardRef,
     FrozenSet,
     Generic,
     List,
@@ -23,17 +24,16 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    ForwardRef,
 )
 
 from typing_extensions import Protocol, TypedDict
 
 from .error import (
+    ExtractionError,
     HydrationError,
     PropertyError,
     RequiredPropertyError,
     TypeHydrationError,
-    ExtractionError,
     UnsupportedTypeError,
 )
 from .iso_datetime import (
@@ -622,7 +622,7 @@ class StrategyRegistry:
 
         if origin_type is Union:
             type_args = get_type_args(type_name)
-            if len(type_args) == 2 and type_args[-1] is type(None):
+            if len(type_args) == 2 and type_args[-1] is type(None):  # noqa
                 self._cached[type_name] = OptionalTypeStrategy(self.get_for(type_args[0]))
             else:
                 self._cached[type_name] = UnionStrategy(get_type_args(type_name))

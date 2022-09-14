@@ -1,5 +1,6 @@
-import pytest
 from datetime import date, datetime, time, timedelta, timezone
+
+import pytest
 
 from chili.iso_datetime import (
     parse_iso_date,

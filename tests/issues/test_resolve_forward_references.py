@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
 
 import chili
 
@@ -21,16 +21,16 @@ class ArtistResponse(ArtistNew):
 
 @dataclass
 class ArtistCollectionResponse(CollectionResponse):
-    items: typing.List['ArtistResponse']
+    items: typing.List["ArtistResponse"]
 
 
 def test_can_extract_forward_references() -> None:
     # given
     artist_collection = ArtistCollectionResponse(
         items=[
-            ArtistResponse(name='Various Artists', artist_id='21'),
-            ArtistResponse(name='Led Zeppelin', artist_id='22'),
-            ArtistResponse(name='Frank Zappa & Captain Beefheart', artist_id='23')
+            ArtistResponse(name="Various Artists", artist_id="21"),
+            ArtistResponse(name="Led Zeppelin", artist_id="22"),
+            ArtistResponse(name="Frank Zappa & Captain Beefheart", artist_id="23"),
         ],
     )
 

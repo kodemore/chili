@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Union, Any, Optional
+from typing import Any, Optional, Union
 
-from chili import registry, HydrationStrategy
+from chili import HydrationStrategy, registry
 
 
 def test_union_strategy_for_primitives() -> None:

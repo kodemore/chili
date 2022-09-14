@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Any
+from typing import Any, List
 
 import pytest
 

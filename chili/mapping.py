@@ -1,6 +1,6 @@
 from collections import namedtuple
 from collections.abc import Iterable
-from typing import Union, Dict, Callable, Any
+from typing import Any, Callable, Dict, Union
 
 KeyMapper = namedtuple("KeyMapper", "key scheme")
 MappingScheme = Dict[str, Union[Dict, str, Callable]]

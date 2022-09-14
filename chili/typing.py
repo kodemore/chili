@@ -3,12 +3,6 @@ from dataclasses import Field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type, Union
 
-try:
-    from typing import _TypingBase as typing_base  # type: ignore
-except ImportError:
-    from typing import _Final as typing_base  # type: ignore
-
-
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
 EMPTY = object()
@@ -26,7 +20,7 @@ def is_optional(type_name: Type) -> bool:
     return (
         get_origin_type(type_name) is Union
         and bool(get_type_args(type_name))
-        and get_type_args(type_name)[-1] is type(None)
+        and get_type_args(type_name)[-1] is type(None)  # noqa
     )
 
 

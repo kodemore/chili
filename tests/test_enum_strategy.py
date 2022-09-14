@@ -1,5 +1,6 @@
-import pytest
 from enum import Enum, IntEnum
+
+import pytest
 
 from chili import registry
 

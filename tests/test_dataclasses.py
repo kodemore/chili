@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Generic, List, TypeVar
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 

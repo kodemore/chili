@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+from typing import List, Sequence, Type
 
 import pytest
-from typing import List, Sequence, Type
 
 from chili import registry
 

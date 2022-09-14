@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+from typing import Any, Optional, Type
 
 import pytest
-from typing import Any, Optional, Type
 
 from chili import registry
 

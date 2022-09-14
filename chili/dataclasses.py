@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 from typing import Any, Dict, Type, TypeVar
 
-from .hydration import hydrate, extract
+from .hydration import extract, hydrate
 from .mapping import Mapper
 
 T = TypeVar("T")
