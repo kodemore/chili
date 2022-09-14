@@ -1,19 +1,19 @@
 # Chili [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-Chili is an extensible dataclass support library.
-It contains helper functions to simplify initialising and extracting complex dataclasses.
-This might come in handy when you want to transform your request's data to well-defined and easy to understand objects 
-or when there is a need to hydrate and/or transform database records to desired representation in memory.
 
-Library also ensures type integrity and provides simple interface, which does not pollute your codebase
-with unwanted abstractions.
+Chili is an extensible data class support library. Its primary focus is on simplifying tasks related to initialising and extracting data classes.
+
+Chili ensures type integrity and provides a simple interface to keep your codebase clean from unwanted abstractions.
 
 ## Features
-- extensible and easy to use
-- initialisation and extraction for complex dataclasses
-- supports most python's types found in `typing` package (including generics)
-- does not pollute your codebase
-- supports adding custom types
+- supports nested data structures
+- understands lists, sets, collections, unions, etc
+- ensures type integrity 
+- support for default values
+- almost complete coverage for `typing` package (including generics)
+- supports forward references out of the box
+- might be extended with custom types
 - data mapping/transformation with `chili.Mapping`
+- fields hiding from serialisation and deserialisation with python's `field` function
 
 ## Installation
 
@@ -52,7 +52,7 @@ assert isinstance(pet.tags, List)
 assert isinstance(pet.tags[0], Tag)
 ```
 
-> This example shows how simply cast your dict to given dataclass and that type are ensured by the init_dataclass function.
+> This example shows how can you cast your dict to a given data class. During data class initialisation, the type integrity is ensured automatically
 
 ## Transforming dataclass back to a dict
 
@@ -124,7 +124,7 @@ class Pet:
         self.tags_length = len(self.tags)
 
 
-boo = init_dataclass({"name": "Boo", "tags": ["hamster", "boo"], "tags_length": 0}, Pet)
+boo = init_dataclass({"name": "Boo", "tags": ["hamster", "boo"]}, Pet)
 
 assert isinstance(boo, Pet)
 assert boo.tags_length == 2
@@ -584,7 +584,7 @@ Ellipsis operator (`...`) is also supported.
 Same as `dict` but values of a dict are respectively hydrated and extracted to match annotated types. 
 
 
-### `typing.Generic
+### `typing.Generic`
 
 Only parametrised generic classes are supported, dataclasses that extends other Generic classes without parametrisation will fail.
 
@@ -595,17 +595,17 @@ Limited support for Unions.
 
 ## API
 
-### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
+#### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
 if strict mode is set to `True` it raises `InvalidValueError`.
 
-### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`typing.Any`_
+#### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`typing.Any`_
 
 Extracts given value into primitive or set of primitives. If extraction fails, it returns passed value as a result, if
 strict mode is set to `True` it raises `InvalidValueError`.
 
-### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
+#### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 `init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
 with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
@@ -617,7 +617,7 @@ or defines complex typing, `init_dataclass` function will respect your type anno
 to match the defined types. 
 
 If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
-### **`chili.asdict`**(**`value`**, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`Dict[str, typing.Any]`_
+#### **`chili.asdict`**(**`value`**, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`Dict[str, typing.Any]`_
 
 `asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
 extracts its members to a dictionary, so the returned data can be stored as json object or easily serialised 
