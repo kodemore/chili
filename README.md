@@ -1,18 +1,17 @@
 # Chili [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-Chili is an extensible dataclass support library.
-It contains helper functions to simplify initialising and extracting complex dataclasses.
-This might come in handy when you want to transform your request's data to well-defined and easy to understand objects 
-or when there is a need to hydrate and/or transform database records to desired representation in memory.
 
-Library also ensures type integrity and provides simple interface, which does not pollute your codebase
-with unwanted abstractions.
+Chili is an extensible data class support library. Its primary focus is on simplifying tasks related to initialising and extracting data classes.
+
+Chili ensures type integrity and provides a simple interface to keep your codebase clean from unwanted abstractions.
 
 ## Features
-- extensible and easy to use
-- initialisation and extraction for complex dataclasses
-- supports most python's types found in `typing` package (including generics)
-- does not pollute your codebase
-- supports adding custom types
+- supports nested data structures
+- understands lists, sets, collections, unions, etc
+- ensures type integrity 
+- support for default values
+- almost complete coverage for `typing` package (including generics)
+- supports forward references out of the box
+- might be extended with custom types
 - data mapping/transformation with `chili.Mapping`
 
 ## Installation
@@ -52,7 +51,7 @@ assert isinstance(pet.tags, List)
 assert isinstance(pet.tags[0], Tag)
 ```
 
-> This example shows how simply cast your dict to given dataclass and that type are ensured by the init_dataclass function.
+> This example shows how can you cast your dict to a given data class. During data class initialisation, the type integrity is ensured automatically
 
 ## Transforming dataclass back to a dict
 
@@ -584,7 +583,7 @@ Ellipsis operator (`...`) is also supported.
 Same as `dict` but values of a dict are respectively hydrated and extracted to match annotated types. 
 
 
-### `typing.Generic
+### `typing.Generic`
 
 Only parametrised generic classes are supported, dataclasses that extends other Generic classes without parametrisation will fail.
 
