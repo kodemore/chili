@@ -595,17 +595,17 @@ Limited support for Unions.
 
 ## API
 
-### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
+#### **`chili.hydrate`**(**`value`**: _`typing.Any`_, **`type_name`**: _`Type[T]`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 Hydrates given value into instance of passed type. If hydration fails, it returns passed value as a result, 
 if strict mode is set to `True` it raises `InvalidValueError`.
 
-### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`typing.Any`_
+#### **`chili.extract`**(**`value`**: _`typing.Any`_, **`strict`**: _`bool`_ = `False`, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`typing.Any`_
 
 Extracts given value into primitive or set of primitives. If extraction fails, it returns passed value as a result, if
 strict mode is set to `True` it raises `InvalidValueError`.
 
-### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
+#### **`chili.init_dataclass`**(**`value`**: _`dict`_, **`type_name`**: _`Type[T]`_, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`T`_
 
 `init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
 with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
@@ -617,7 +617,7 @@ or defines complex typing, `init_dataclass` function will respect your type anno
 to match the defined types. 
 
 If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
-### **`chili.asdict`**(**`value`**, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`Dict[str, typing.Any]`_
+#### **`chili.asdict`**(**`value`**, **`mapping`**: _`chili.Mapper`_ = `None`) -> _`Dict[str, typing.Any]`_
 
 `asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
 extracts its members to a dictionary, so the returned data can be stored as json object or easily serialised 
