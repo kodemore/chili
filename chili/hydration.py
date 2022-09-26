@@ -7,6 +7,7 @@ from decimal import Decimal
 from enum import Enum
 from functools import partial
 from inspect import isclass
+from json import loads as json_load, dumps as json_dump
 from typing import (
     Any,
     AnyStr,
@@ -652,8 +653,11 @@ def hydrate(data: Any, type_name: Type[T], strict: bool = True, mapping: Mapper 
     return strategy.hydrate(data)
 
 
-def extract(data: Any, strict: bool = True, mapping: Mapper = None) -> Any:
-    strategy = registry.get_for((type(data)), strict)
+def extract(data: Any, type_name: Type[T] = None, strict: bool = True, mapping: Mapper = None) -> Any:
+    if type_name is None:
+        strategy = registry.get_for((type(data)), strict)
+    else:
+        strategy = registry.get_for(type_name, strict)
 
     if mapping is not None:
         return mapping.map(strategy.extract(data))
@@ -669,4 +673,12 @@ def resolve_forward_reference(module: Any, ref: ForwardRef) -> Any:
     return None
 
 
-__all__ = ["registry", "HydrationStrategy", "hydrate", "extract"]
+def as_json(data: Any, type_name: Type[T] = None, strict: bool = True, mapping: Mapper = None) -> str:
+    return json_dump(extract(data, type_name, strict, mapping))
+
+
+def from_json(data: str, type_name: Type[T], strict: bool = True, mapping: Mapper = None) -> Any:
+    return hydrate(json_load(data), type_name, strict, mapping)
+
+
+__all__ = ["registry", "HydrationStrategy", "hydrate", "extract", "from_json", "as_json"]

@@ -16,6 +16,7 @@ Chili ensures type integrity and provides a simple interface to keep your codeba
 - might be extended with custom types
 - data mapping/transformation with `chili.Mapping`
 - fields hiding from serialisation and deserialisation with python's `field` function
+- mapping from json data and to json data
 
 ## Installation
 
@@ -77,6 +78,33 @@ assert isinstance(some_pounds_dict["amount"], float)
 
 > Chili works with wide commonly used python types, but not every type can be simply transformed back and forth, 
 > so make sure you familiarise yourself with supported types.
+
+## Working with json data
+
+```python
+from dataclasses import dataclass
+from typing import List
+from chili import from_json, as_json
+
+@dataclass
+class Tag:
+    id: str
+    name: str
+
+@dataclass
+class Pet:
+    name: str
+    tags: List[Tag]
+
+pet_json = '{"name": "Bobik", "tags": [{"id": "12", "name": "dog"}]}'
+    
+pet = from_json(pet_json, Pet)
+assert isinstance(pet, Pet)
+assert isinstance(pet.tags, List)
+assert isinstance(pet.tags[0], Tag)
+
+assert pet_json == as_json(pet)
+```
 
 ## Using default values
 
