@@ -1,24 +1,103 @@
-from dataclasses import dataclass
-from typing import List
-from chili import from_json, as_json
+from chili import decodable, JsonDecoder, JsonEncoder, JsonSerializer, encodable
 
 
-def test_json_support() -> None:
-    @dataclass
-    class Tag:
-        id: str
+def test_can_instantiate_json_decoder() -> None:
+    # given
+    @decodable
+    class Example:
+        ...
+
+    # when
+    instance = JsonDecoder[Example]()
+
+    # then
+    assert isinstance(instance, JsonDecoder)
+    assert instance.__generic__ == Example
+
+
+def test_can_instantiate_json_encoder() -> None:
+    # given
+    @encodable
+    class Example:
+        ...
+
+    # when
+    instance = JsonEncoder[Example]()
+
+    # then
+    assert isinstance(instance, JsonEncoder)
+    assert instance.__generic__ == Example
+
+def test_can_json_decode() -> None:
+    # given
+    @decodable
+    class Author:
+        first_name: str
+        last_name: str
+
+    @decodable
+    class Book:
         name: str
+        author: Author
+        isbn: str
 
-    @dataclass
-    class Pet:
+    book_json = '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+    decoder = JsonDecoder[Book]()
+
+    # when
+    result = decoder.decode(book_json)
+
+    # then
+    assert isinstance(result, Book)
+    assert result.name == "The Hobbit"
+    assert result.isbn == "1234567890"
+    assert isinstance(result.author, Author)
+    assert result.author.first_name == "J.R.R."
+    assert result.author.last_name == "Tolkien"
+
+def test_can_json_encode() -> None:
+    # given
+    @encodable
+    class Author:
+        first_name: str
+        last_name: str
+
+        def __init__(self, first_name: str, last_name: str):
+            self.first_name = first_name
+            self.last_name = last_name
+
+    @encodable
+    class Book:
         name: str
-        tags: List[Tag]
+        author: Author
+        isbn: str
 
-    pet_json = '{"name": "Bobik", "tags": [{"id": "12", "name": "dog"}]}'
+        def __init__(self, name: str, author: Author, isbn: str):
+            self.name = name
+            self.author = author
+            self.isbn = isbn
 
-    pet = from_json(pet_json, Pet)
-    assert isinstance(pet, Pet)
-    assert isinstance(pet.tags, List)
-    assert isinstance(pet.tags[0], Tag)
+    book = Book("The Hobbit", Author("J.R.R.", "Tolkien"), "1234567890")
+    encoder = JsonEncoder[Book]()
 
-    assert pet_json == as_json(pet)
+    # when
+    result = encoder.encode(book)
+
+    # then
+    assert result == '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+
+
+def test_fail_decode_invalid_json() -> None:
+    # given
+    @decodable
+    class Example:
+        ...
+
+    decoder = JsonDecoder[Example]()
+
+    # when
+    try:
+        decoder.decode("invalid json")
+        assert False
+    except ValueError:
+        pass

@@ -14,22 +14,22 @@ classifiers = [
     "Topic :: Software Development :: Code Generators",
     "Topic :: Utilities",
 ]
-description = "Chili is a dataclass support library. It is providing simple and fast hydration and extraction interfaces for dataclasses."
+description = "Chili is serialisation library. It can serialise/deserialise almost any object."
 documentation = "https://github.com/kodemore/chili"
 homepage = "https://github.com/kodemore/chili"
-keywords = ["dataclasses", "dataclass", "library", "mapping", "dto", "hydration", "extraction"]
+keywords = ["serialise", "deserialise", "encode", "decode", "object", "class"]
 license = "MIT"
 name = "chili"
 readme = "README.md"
 repository = "https://github.com/kodemore/chili"
-version = "1.8.0"
+version = "2.0.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 typing-extensions = "^4.2"
+gaffe = "0.2.0"
 
 [tool.poetry.dev-dependencies]
-bandit = "^1.7.4"
 black = "22.3"
 flake8 = "^5.0.4"
 isort = "^5.6.4"
