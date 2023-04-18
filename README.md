@@ -7,6 +7,8 @@ It offers complete coverage for the `typing` package; including generics, and su
 
 With support for nested data structures, default values, forward references, and data mapping and transformation, Chili is designed to be both easy to use and powerful enough to handle complex data structures.
 
+> Note: Chili is not a validation library, although it ensures the type integrity. 
+
 # Installation
 
 To install the library, simply use pip:
