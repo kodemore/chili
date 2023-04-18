@@ -87,7 +87,7 @@ def decodable(_cls=None) -> Any:
 
 
 class TypeDecoders(Dict[Any, TypeDecoder]):
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # type: ignore
         return hash(tuple(sorted([str(key) for key in self.keys()])))
 
 
@@ -211,7 +211,7 @@ class UnionDecoder(TypeDecoder):
             if a_type in self._PRIMITIVE_TYPES:
                 self._type_decoders[a_type] = a_type
                 continue
-            self._type_decoders[a_type] = build_type_decoder(a_type)
+            self._type_decoders[a_type] = build_type_decoder(a_type)  # type: ignore
 
     def decode(self, value: Any) -> Any:
         passed_type = type(value)
@@ -249,7 +249,7 @@ class UnionDecoder(TypeDecoder):
 
 class ClassDecoder(TypeDecoder):
     _fields: Dict[str, TypeDecoder]
-    _schema: Dict[str, TypeDecoder]
+    _schema: TypeSchema
 
     def __init__(self, class_name: Type):
         self.class_name = class_name
@@ -280,7 +280,7 @@ class ClassDecoder(TypeDecoder):
         return {name: self._build_type_decoder(field.type) for name, field in self._schema.items()}
 
     def _build_type_decoder(self, a_type: Type) -> TypeDecoder:
-        return build_type_decoder(a_type, module=self.class_name.__module__)
+        return build_type_decoder(a_type, module=self.class_name.__module__)  # type: ignore
 
 
 class GenericClassDecoder(ClassDecoder):
@@ -365,9 +365,6 @@ _supported_generics = {
 }
 
 
-_cached_decoders = {}
-
-
 @lru_cache(maxsize=None)
 def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module: Any = None) -> TypeDecoder:
     if extra_decoders and a_type in extra_decoders:
@@ -403,33 +400,35 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
     if origin_type is Union:
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
-            return OptionalTypeDecoder(build_type_decoder(type_args[0]))
+            return OptionalTypeDecoder(build_type_decoder(type_args[0]))  # type: ignore
         return UnionDecoder(type_args)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
         resolved_reference = resolve_forward_reference(module, a_type)
         if resolved_reference is not None:
-            return Decoder[resolved_reference](decoders=extra_decoders)
+            return Decoder[resolved_reference](decoders=extra_decoders)  # type: ignore
 
     if get_origin(origin_type) is not None:
         raise DecoderError.invalid_type(a_type)
 
     if hasattr(origin_type, _PROPERTIES):
-        return Decoder[origin_type](decoders=extra_decoders)
+        return Decoder[origin_type](decoders=extra_decoders)  # type: ignore
 
     if is_optional(a_type):
-        return OptionalTypeDecoder(build_type_decoder(unpack_optional(a_type)))
+        return OptionalTypeDecoder(build_type_decoder(unpack_optional(a_type)))  # type: ignore
 
     if origin_type not in _supported_generics:
         raise DecoderError.invalid_type(a_type)
 
-    type_attributes: List[TypeDecoder] = [
-        build_type_decoder(subtype, module=module) if subtype is not ... else ... for subtype in get_type_args(a_type)
+    type_attributes: List[Union[TypeDecoder, Any]] = [
+        build_type_decoder(subtype, module=module)  # type: ignore
+        if subtype is not ... else ...
+        for subtype in get_type_args(a_type)
     ]
     if len(type_attributes) == 1:
-        return _supported_generics[origin_type](type_attributes[0])
+        return _supported_generics[origin_type](type_attributes[0])  # type: ignore
 
-    return _supported_generics[origin_type](type_attributes)
+    return _supported_generics[origin_type](type_attributes)  # type: ignore
 
 
 class Decoder(Generic[T]):
@@ -464,7 +463,10 @@ class Decoder(Generic[T]):
     def _build_decoders(self) -> Dict[str, TypeDecoder]:
         schema: TypeSchema = getattr(self.__generic__, _PROPERTIES)
 
-        return {prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders) for prop in schema.values()}
+        return {
+            prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders)  # type: ignore
+            for prop in schema.values()
+        }
 
     @classmethod
     def __class_getitem__(cls, item: Type) -> Type[Decoder]:  # noqa: E501
@@ -490,7 +492,7 @@ def decode(obj: StateObject, a_type: Type[T], decoders: Union[TypeDecoders, Dict
     if decoders and not isinstance(decoders, TypeDecoders):
         decoders = TypeDecoders(decoders)
 
-    decoder = build_type_decoder(a_type, extra_decoders=decoders)
+    decoder = build_type_decoder(a_type, extra_decoders=decoders)  # type: ignore
     if decoder is None:
         raise DecoderError.invalid_type
 
