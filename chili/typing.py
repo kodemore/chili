@@ -1,11 +1,40 @@
+from __future__ import annotations
+
+import sys
 import typing
-from dataclasses import Field
+from dataclasses import Field, is_dataclass, MISSING
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union
+from inspect import isclass as is_class
+from typing import Any, Dict, List, Optional, Type, Union, ClassVar, NewType, Callable
 
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
-EMPTY = object()
+_PROPERTIES = "__typed_properties__"
+_ENCODABLE = "__encodable__"
+_DECODABLE = "__decodable__"
+UNDEFINED = object()
+
+
+__all__ = [
+    "get_class_fields",
+    "get_dataclass_fields",
+    "get_origin_type",
+    "get_parameters_map",
+    "get_type_args",
+    "get_type_parameters",
+    "is_class",
+    "is_dataclass",
+    "is_enum_type",
+    "is_named_tuple",
+    "is_optional",
+    "is_typed_dict",
+    "map_generic_type",
+    "unpack_optional",
+    "resolve_forward_reference",
+    "create_schema",
+    "TypeSchema",
+    "Property",
+]
 
 
 def get_origin_type(type_name: Type) -> Optional[Type]:
@@ -14,6 +43,18 @@ def get_origin_type(type_name: Type) -> Optional[Type]:
 
 def get_type_args(type_name: Type) -> List[Type]:
     return getattr(type_name, "__args__", [])
+
+
+def is_encodable(type_name: Type) -> bool:
+    return is_class(type_name) and hasattr(type_name, _ENCODABLE)
+
+
+def is_decodable(type_name: Type) -> bool:
+    return is_class(type_name) and hasattr(type_name, _DECODABLE)
+
+
+def is_serialisable(type_name: Type) -> bool:
+    return is_class(type_name) and hasattr(type_name, _DECODABLE) and hasattr(type_name, _ENCODABLE)
 
 
 def is_optional(type_name: Type) -> bool:
@@ -37,6 +78,10 @@ def get_parameters_map(type_name: Type) -> Dict[Type, Type]:
 
 def get_dataclass_fields(type_name: Type) -> Dict[str, Field]:
     return getattr(type_name, "__dataclass_fields__", {})
+
+
+def get_class_fields(type_name: Type) -> Dict[str, Field]:
+    return getattr(type_name, "__annotations__", {})
 
 
 def unpack_optional(type_name: Type) -> Type:
@@ -70,3 +115,87 @@ def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
         return _GenericAlias(origin_type, mapped_args)
 
     return type_name
+
+
+def resolve_forward_reference(module: Any, ref: typing.ForwardRef) -> Any:
+    name = ref.__forward_arg__
+    if name in sys.modules[module].__dict__:
+        return sys.modules[module].__dict__[name]
+
+    return None
+
+
+class Property:
+    __slots__ = ("name", "type", "_default_value", "_default_factory")
+
+    def __init__(
+        self, name: str, property_type: Type, default_value: Any = UNDEFINED, default_factory: Callable = None
+    ):
+        self.name = name
+        self.type = property_type
+        self._default_value = default_value if default_value is not MISSING else UNDEFINED
+        self._default_factory = default_factory
+
+    @property
+    def default_value(self) -> Any:
+        if self._default_value is not UNDEFINED:
+            return self._default_value
+
+        if self._default_factory:
+            return self._default_factory()
+
+        return UNDEFINED
+
+    def __eq__(self, other: Property) -> bool:  # type: ignore
+        return self.name == other.name and self.type is other.type
+
+
+TypeSchema = NewType("TypeSchema", Dict[str, Property])
+
+
+_default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
+
+
+def create_schema(cls: Type) -> TypeSchema:
+    properties = cls.__dict__.get("__annotations__", {})
+
+    schema = TypeSchema({})
+    base_classes = [base_class for base_class in cls.__mro__[1:-1] if hasattr(base_class, _PROPERTIES)]
+    for base_class in base_classes:
+        schema = {**getattr(base_class, _PROPERTIES), **schema}  # type: ignore
+
+    attributes = {name: value for name, value in cls.__dict__.items() if not name.startswith("__")}
+
+    if hasattr(cls, "__dataclass_fields__"):
+        for key, value in cls.__dataclass_fields__.items():
+            if value.default is not MISSING or value.default_factory is not MISSING:
+                attributes[key] = value
+
+    for name, p_type in properties.items():
+        p_origin = get_origin_type(p_type)
+
+        # ignore class vars as they are not object properties
+        if p_origin and p_origin is ClassVar:
+            continue
+
+        if name in attributes:
+            prop_value = attributes[name]
+            if isinstance(prop_value, Field):
+                schema[name] = Property(
+                    name,
+                    p_type,
+                    default_value=prop_value.default,
+                    default_factory=prop_value.default_factory,  # type: ignore
+                )
+            else:
+                prop_value_type = type(prop_value)
+                if not prop_value and (
+                    prop_value_type in _default_factories or isinstance(prop_value, _default_factories)
+                ):
+                    schema[name] = Property(name, p_type, default_factory=prop_value_type)
+                else:
+                    schema[name] = Property(name, p_type, default_value=prop_value)
+        else:
+            schema[name] = Property(name, p_type)
+
+    return schema
