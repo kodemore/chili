@@ -114,7 +114,7 @@ You can also specify custom type encoders by defining a class that implements th
 ```python
 from chili import Encoder, TypeEncoder
 
-class MyCustomEncoder(TypeEncoder[MyCustomType, str]):
+class MyCustomEncoder(TypeEncoder):
     def encode(self, value: MyCustomType) -> str:
         return value.encode()
 
@@ -129,7 +129,7 @@ You can also specify custom type decoders by defining a class that implements th
 ```python
 from chili import Decoder, TypeDecoder
 
-class MyCustomDecoder(TypeDecoder[str, MyCustomType]):
+class MyCustomDecoder(TypeDecoder):
     def decode(self, value: str) -> MyCustomType:
         return MyCustomType.decode(value)
 
