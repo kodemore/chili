@@ -108,7 +108,6 @@ class ListDecoder(TypeDecoder):
             res.append(decoded)
 
         return res
-        # return [self.item_decoder.decode(item) for item in value]
 
 
 class TupleDecoder(TypeDecoder):
@@ -138,9 +137,8 @@ class TupleDecoder(TypeDecoder):
 
 
 class DictDecoder(TypeDecoder):
-    def __init__(self, key_decoder: TypeDecoder, value_decoder: TypeDecoder):
-        self.key_decoder: TypeDecoder = key_decoder
-        self.value_decoder: TypeDecoder = value_decoder
+    def __init__(self, encoders: List[TypeDecoder]) -> None:
+        self.key_decoder, self.value_decoder = encoders
 
     def decode(self, value: dict) -> dict:
         return {
@@ -149,9 +147,8 @@ class DictDecoder(TypeDecoder):
         }
 
 class OrderedDictDecoder(TypeDecoder):
-    def __init__(self, key_decoder: TypeDecoder, value_decoder: TypeDecoder):
-        self.key_decoder: TypeDecoder = key_decoder
-        self.value_decoder: TypeDecoder = value_decoder
+    def __init__(self, decoders: List[TypeDecoder]):
+        self.key_decoder, self.value_decoder = decoders
 
     def decode(self, value: list) -> collections.OrderedDict:
         result = collections.OrderedDict()
@@ -187,7 +184,7 @@ class UnionDecoder(TypeDecoder):
         passed_type = type(value)
 
         if passed_type in self._PRIMITIVE_TYPES:
-            return self._type_decoders.get(passed_type, value)
+            return self._type_decoders.get(passed_type, str)(value)
 
         if passed_type in {int, str}:
             for castable, decoder in self._type_decoders.items():

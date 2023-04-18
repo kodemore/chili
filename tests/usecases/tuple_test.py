@@ -36,7 +36,7 @@ def test_can_encode_typed_tuple() -> None:
     assert result == [1, 2, 3]
 
 
-def test_can_code_variadic_tuple() -> None:
+def test_can_encode_variadic_tuple() -> None:
     # given
     values = (1, 2, 3, 4)
 

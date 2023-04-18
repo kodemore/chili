@@ -1,4 +1,4 @@
-from chili import decodable, JsonDecoder, JsonEncoder, JsonSerializer, encodable
+from chili import decodable, JsonDecoder, JsonEncoder, JsonSerializer, encodable, serializable
 
 
 def test_can_instantiate_json_decoder() -> None:
@@ -101,3 +101,37 @@ def test_fail_decode_invalid_json() -> None:
         assert False
     except ValueError:
         pass
+
+
+def test_can_json_serialise() -> None:
+    # given
+    @serializable
+    class Author:
+        first_name: str
+        last_name: str
+
+        def __init__(self, first_name: str, last_name: str):
+            self.first_name = first_name
+            self.last_name = last_name
+
+    @serializable
+    class Book:
+        name: str
+        author: Author
+
+        def __init__(self, name: str, author: Author):
+            self.name = name
+            self.author = author
+
+    book_json = '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}}'
+    serializer = JsonSerializer[Book]()
+    book_instance = Book("The Hobbit", Author("J.R.R.", "Tolkien"))
+
+    # when
+    result = serializer.encode(book_instance)
+
+    assert result == book_json
+
+    result = serializer.decode(book_json)
+
+    assert isinstance(result, Book)

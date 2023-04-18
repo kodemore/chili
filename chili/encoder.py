@@ -131,9 +131,8 @@ class TupleEncoder(TypeEncoder):
         return result
 
 class DictEncoder(TypeEncoder):
-    def __init__(self, key_encoder: TypeEncoder, value_encoder: TypeEncoder):
-        self.key_encoder = key_encoder
-        self.value_encoder = value_encoder
+    def __init__(self, encoders: List[TypeEncoder]):
+        self.key_encoder, self.value_encoder = encoders
 
     def encode(self, value: dict) -> dict:
         return {
@@ -142,9 +141,8 @@ class DictEncoder(TypeEncoder):
         }
 
 class OrderedDictEncoder(TypeEncoder):
-    def __init__(self, key_encoder: TypeEncoder, value_encoder: TypeEncoder):
-        self.key_encoder = key_encoder
-        self.value_encoder = value_encoder
+    def __init__(self, encoders: List[TypeEncoder]):
+        self.key_encoder, self.value_encoder = encoders
 
     def encode(self, value: dict) -> list:
         return [
