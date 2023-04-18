@@ -72,7 +72,7 @@ def encodable(_cls=None) -> Any:
 
 
 class TypeEncoders(Dict[Any, TypeEncoder]):
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # type: ignore[override]
         return hash(tuple(sorted([str(key) for key in self.keys()])))
 
 
@@ -171,7 +171,7 @@ class OrderedDictEncoder(TypeEncoder):
 
 class ClassEncoder(TypeEncoder):
     _fields: Dict[str, TypeEncoder]
-    _schema: Dict[str, TypeEncoder]
+    _schema: TypeSchema
 
     def __init__(self, class_name: Type):
         self.class_name = class_name
@@ -196,7 +196,7 @@ class ClassEncoder(TypeEncoder):
         return {name: self._build_type_encoder(field.type) for name, field in self._schema.items()}
 
     def _build_type_encoder(self, a_type: Type) -> TypeEncoder:
-        return build_type_encoder(a_type, module=self.class_name.__module__)
+        return build_type_encoder(a_type, module=self.class_name.__module__)  # type: ignore
 
 
 class GenericClassEncoder(ClassEncoder):
@@ -277,7 +277,7 @@ class UnionEncoder(TypeEncoder):
         if value_type not in self.supported_types:
             raise EncoderError.invalid_input
 
-        return build_type_encoder(value_type).encode(value)
+        return build_type_encoder(value_type).encode(value)  # type: ignore
 
 
 _supported_generics = {
@@ -326,13 +326,13 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
     if origin_type is Union:
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
-            return OptionalTypeEncoder(build_type_encoder(type_args[0]))
+            return OptionalTypeEncoder(build_type_encoder(type_args[0]))  # type: ignore
         return UnionEncoder(type_args)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
         resolved_reference = resolve_forward_reference(module, a_type)
         if resolved_reference is not None:
-            return Encoder[resolved_reference](encoders=extra_encoders)
+            return Encoder[resolved_reference](encoders=extra_encoders)  # type: ignore[valid-type]
 
     if typing.get_origin(origin_type) is not None:
         raise EncoderError.invalid_type(a_type)
@@ -340,22 +340,24 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
     if hasattr(origin_type, _PROPERTIES):
         if origin_type != a_type:
             return GenericClassEncoder(a_type)
-        return Encoder[origin_type](encoders=extra_encoders)
+        return Encoder[origin_type](encoders=extra_encoders)  # type: ignore[valid-type]
 
     if is_optional(a_type):
-        return OptionalTypeEncoder(build_type_encoder(unpack_optional(a_type)))
+        return OptionalTypeEncoder(build_type_encoder(unpack_optional(a_type)))  # type: ignore
 
     if origin_type not in _supported_generics:
         raise EncoderError.invalid_type(a_type)
 
     type_attributes: List[TypeEncoder] = [
-        build_type_encoder(subtype, module=module) if subtype is not ... else ... for subtype in get_type_args(a_type)
+        build_type_encoder(subtype, module=module)  # type: ignore
+        if subtype is not ... else ...
+        for subtype in get_type_args(a_type)
     ]
 
     if len(type_attributes) == 1:
-        return _supported_generics[origin_type](type_attributes[0])
+        return _supported_generics[origin_type](type_attributes[0])  # type: ignore
 
-    return _supported_generics[origin_type](type_attributes)
+    return _supported_generics[origin_type](type_attributes)  # type: ignore
 
 
 class Encoder(Generic[T]):
@@ -388,7 +390,10 @@ class Encoder(Generic[T]):
     def _build_encoders(self) -> Dict[str, TypeEncoder]:
         schema: TypeSchema = self.schema
 
-        return {prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders) for prop in schema.values()}
+        return {
+            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders)  # type: ignore
+            for prop in schema.values()
+        }
 
     @classmethod
     def __class_getitem__(cls, item: Any) -> Type[Encoder]:  # noqa: E501
@@ -417,9 +422,9 @@ def encode(
         encoders = TypeEncoders(encoders)
 
     if type_hint is not None:
-        encoder = build_type_encoder(type_hint, extra_encoders=encoders)
+        encoder = build_type_encoder(type_hint, extra_encoders=encoders)  # type: ignore
     else:
-        encoder = build_type_encoder(type(obj), extra_encoders=encoders)
+        encoder = build_type_encoder(type(obj), extra_encoders=encoders)  # type: ignore
 
     if encoder is None:
         raise EncoderError.invalid_input

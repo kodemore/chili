@@ -30,7 +30,7 @@ jobs:
         run: |
           poetry run isort -c setup.cfg
           poetry run black --line-length=120 --target-version py38 chili
-          poetry run mypy chili
+          poetry run mypy chili --show-error-codes --pretty
       - name: Test with codecoverage
         run: |
           poetry run pytest --cov=./ --cov-report=xml
