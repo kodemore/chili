@@ -11,9 +11,25 @@ from functools import lru_cache
 from inspect import isclass
 from typing import Generic, Type, Any, Dict, TypeVar, Protocol, List, Union, Callable, final, Tuple
 
-from chili.typing import create_schema, _PROPERTIES, _ENCODABLE, TypeSchema, is_dataclass, get_origin_type, \
-    resolve_forward_reference, is_enum_type, is_named_tuple, is_typed_dict, get_parameters_map, \
-    map_generic_type, is_optional, get_type_args, unpack_optional, UNDEFINED, is_class
+from chili.typing import (
+    create_schema,
+    _PROPERTIES,
+    _ENCODABLE,
+    TypeSchema,
+    is_dataclass,
+    get_origin_type,
+    resolve_forward_reference,
+    is_enum_type,
+    is_named_tuple,
+    is_typed_dict,
+    get_parameters_map,
+    map_generic_type,
+    is_optional,
+    get_type_args,
+    unpack_optional,
+    UNDEFINED,
+    is_class,
+)
 from .error import EncoderError
 from .iso_datetime import timedelta_to_iso_duration
 from .state import StateObject
@@ -23,9 +39,11 @@ U = TypeVar("U")
 T = TypeVar("T")
 E = TypeVar("E", bound=Enum)
 
+
 class TypeEncoder(Protocol):
     @abstractmethod
-    def encode(self, value): ...
+    def encode(self, value):
+        ...
 
 
 @final
@@ -37,7 +55,7 @@ class ProxyEncoder(TypeEncoder, Generic[T]):
         return self._encoder(value)
 
 
-def encodable(_cls = None) -> Any:
+def encodable(_cls=None) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class encodable
         if not hasattr(cls, _PROPERTIES):
@@ -65,35 +83,38 @@ def ordered_dict(value: collections.OrderedDict) -> List[List[Any]]:
 
     return result
 
-_builtin_type_encoders = TypeEncoders({
-    bool: ProxyEncoder[bool](bool),
-    int: ProxyEncoder[int](int),
-    float: ProxyEncoder[float](float),
-    str: ProxyEncoder[str](str),
-    bytes: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
-    bytearray: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
-    list: ProxyEncoder[list](list),
-    set: ProxyEncoder[list](list),
-    frozenset: ProxyEncoder[list](list),
-    tuple: ProxyEncoder[list](list),
-    dict: ProxyEncoder[dict](dict),
-    collections.OrderedDict: ProxyEncoder[list](ordered_dict),
-    collections.deque: ProxyEncoder[list](list),
-    typing.TypedDict: ProxyEncoder[dict](dict),  # type: ignore
-    typing.Dict: ProxyEncoder[dict](dict),
-    typing.List: ProxyEncoder[list](list),
-    typing.Sequence: ProxyEncoder[list](list),
-    typing.Tuple: ProxyEncoder[list](list),  # type: ignore
-    typing.Set: ProxyEncoder[list](list),
-    typing.FrozenSet: ProxyEncoder[list](list),
-    typing.Deque: ProxyEncoder[list](list),
-    typing.AnyStr: ProxyEncoder[str](str),  # type: ignore
-    decimal.Decimal: ProxyEncoder[str](str),
-    datetime.time: ProxyEncoder[str](lambda value: value.isoformat()),
-    datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
-    datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
-    datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
-})
+
+_builtin_type_encoders = TypeEncoders(
+    {
+        bool: ProxyEncoder[bool](bool),
+        int: ProxyEncoder[int](int),
+        float: ProxyEncoder[float](float),
+        str: ProxyEncoder[str](str),
+        bytes: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
+        bytearray: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
+        list: ProxyEncoder[list](list),
+        set: ProxyEncoder[list](list),
+        frozenset: ProxyEncoder[list](list),
+        tuple: ProxyEncoder[list](list),
+        dict: ProxyEncoder[dict](dict),
+        collections.OrderedDict: ProxyEncoder[list](ordered_dict),
+        collections.deque: ProxyEncoder[list](list),
+        typing.TypedDict: ProxyEncoder[dict](dict),  # type: ignore
+        typing.Dict: ProxyEncoder[dict](dict),
+        typing.List: ProxyEncoder[list](list),
+        typing.Sequence: ProxyEncoder[list](list),
+        typing.Tuple: ProxyEncoder[list](list),  # type: ignore
+        typing.Set: ProxyEncoder[list](list),
+        typing.FrozenSet: ProxyEncoder[list](list),
+        typing.Deque: ProxyEncoder[list](list),
+        typing.AnyStr: ProxyEncoder[str](str),  # type: ignore
+        decimal.Decimal: ProxyEncoder[str](str),
+        datetime.time: ProxyEncoder[str](lambda value: value.isoformat()),
+        datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
+        datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
+        datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
+    }
+)
 
 
 class ListEncoder(TypeEncoder):
@@ -102,7 +123,6 @@ class ListEncoder(TypeEncoder):
 
     def encode(self, value: typing.List) -> list:
         return [self.item_encoder.encode(item) for item in value]
-
 
 
 class TupleEncoder(TypeEncoder):
@@ -130,15 +150,14 @@ class TupleEncoder(TypeEncoder):
         result = [encoder.encode(value[index]) for index, encoder in enumerate(self.items_encoder)]
         return result
 
+
 class DictEncoder(TypeEncoder):
     def __init__(self, encoders: List[TypeEncoder]):
         self.key_encoder, self.value_encoder = encoders
 
     def encode(self, value: dict) -> dict:
-        return {
-            self.key_encoder.encode(i_key): self.value_encoder.encode(i_value)
-            for i_key, i_value in value.items()
-        }
+        return {self.key_encoder.encode(i_key): self.value_encoder.encode(i_value) for i_key, i_value in value.items()}
+
 
 class OrderedDictEncoder(TypeEncoder):
     def __init__(self, encoders: List[TypeEncoder]):
@@ -146,9 +165,9 @@ class OrderedDictEncoder(TypeEncoder):
 
     def encode(self, value: dict) -> list:
         return [
-            [self.key_encoder.encode(i_key), self.value_encoder.encode(i_value)]
-            for i_key, i_value in value.items()
+            [self.key_encoder.encode(i_key), self.value_encoder.encode(i_value)] for i_key, i_value in value.items()
         ]
+
 
 class ClassEncoder(TypeEncoder):
     _fields: Dict[str, TypeEncoder]
@@ -187,7 +206,6 @@ class GenericClassEncoder(ClassEncoder):
         type_: Type = get_origin_type(class_name)  # type: ignore
         super().__init__(type_)
 
-
     def _build_type_encoder(self, a_type: Type) -> TypeEncoder:
         return build_type_encoder(
             map_generic_type(a_type, self._generic_parameters), module=self._generic_type.__module__
@@ -225,9 +243,7 @@ class NamedTupleEncoder(TypeEncoder):
     def _build(self) -> None:
         field_types = self.type.__annotations__
         for item_type in field_types.values():
-            self._arg_encoders.append(
-                build_type_encoder(item_type, module=self.type.__module__)
-            )
+            self._arg_encoders.append(build_type_encoder(item_type, module=self.type.__module__))
 
 
 class TypedDictEncoder(TypeEncoder):
@@ -332,8 +348,9 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
     if origin_type not in _supported_generics:
         raise EncoderError.invalid_type(a_type)
 
-    type_attributes: List[TypeEncoder] = [build_type_encoder(subtype, module=module) if subtype is not ... else ...
-                                          for subtype in get_type_args(a_type)]
+    type_attributes: List[TypeEncoder] = [
+        build_type_encoder(subtype, module=module) if subtype is not ... else ... for subtype in get_type_args(a_type)
+    ]
 
     if len(type_attributes) == 1:
         return _supported_generics[origin_type](type_attributes[0])
@@ -346,7 +363,7 @@ class Encoder(Generic[T]):
     _encoders: Dict[str, TypeEncoder]
 
     def __init__(self, encoders: Union[Dict, TypeEncoders] = None):
-        if encoders and  not isinstance(encoders, TypeEncoders):
+        if encoders and not isinstance(encoders, TypeEncoders):
             encoders = TypeEncoders(encoders)
 
         self.type_encoders = encoders
@@ -371,10 +388,7 @@ class Encoder(Generic[T]):
     def _build_encoders(self) -> Dict[str, TypeEncoder]:
         schema: TypeSchema = self.schema
 
-        return {
-            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders)
-            for prop in schema.values()
-        }
+        return {prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders) for prop in schema.values()}
 
     @classmethod
     def __class_getitem__(cls, item: Any) -> Type[Encoder]:  # noqa: E501
@@ -396,7 +410,9 @@ class Encoder(Generic[T]):
         )
 
 
-def encode(obj: Any, type_hint: Type = None, encoders: Union[TypeEncoders, Dict[Any, TypeEncoder]] = None) -> StateObject:
+def encode(
+    obj: Any, type_hint: Type = None, encoders: Union[TypeEncoders, Dict[Any, TypeEncoder]] = None
+) -> StateObject:
     if encoders and not isinstance(encoders, TypeEncoders):
         encoders = TypeEncoders(encoders)
 

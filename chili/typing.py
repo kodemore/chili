@@ -31,11 +31,11 @@ __all__ = [
     "map_generic_type",
     "unpack_optional",
     "resolve_forward_reference",
-
     "create_schema",
     "TypeSchema",
     "Property",
 ]
+
 
 def get_origin_type(type_name: Type) -> Optional[Type]:
     return getattr(type_name, "__origin__", None)
@@ -99,6 +99,7 @@ def is_named_tuple(type_name: Type) -> bool:
 def is_typed_dict(type_name: Type) -> bool:
     return issubclass(type_name, dict) and hasattr(type_name, "__annotations__")
 
+
 def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
     if not type_map:
         return type_name
@@ -127,12 +128,13 @@ def resolve_forward_reference(module: Any, ref: typing.ForwardRef) -> Any:
 class Property:
     __slots__ = ("name", "type", "_default_value", "_default_factory")
 
-    def __init__(self, name: str, property_type: Type, default_value: Any = UNDEFINED, default_factory: Callable = None):
+    def __init__(
+        self, name: str, property_type: Type, default_value: Any = UNDEFINED, default_factory: Callable = None
+    ):
         self.name = name
         self.type = property_type
         self._default_value = default_value if default_value is not MISSING else UNDEFINED
         self._default_factory = default_factory
-
 
     @property
     def default_value(self) -> Any:
@@ -155,22 +157,14 @@ _default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
 
 
 def create_schema(cls: Type) -> TypeSchema:
-    properties = cls.__dict__.get('__annotations__', {})
+    properties = cls.__dict__.get("__annotations__", {})
 
     schema = TypeSchema({})
-    base_classes = [
-        base_class
-        for base_class in cls.__mro__[1:-1]
-        if hasattr(base_class, _PROPERTIES)
-    ]
+    base_classes = [base_class for base_class in cls.__mro__[1:-1] if hasattr(base_class, _PROPERTIES)]
     for base_class in base_classes:
         schema = {**getattr(base_class, _PROPERTIES), **schema}  # type: ignore
 
-    attributes = {
-        name: value
-        for name, value in cls.__dict__.items()
-        if not name.startswith("__")
-    }
+    attributes = {name: value for name, value in cls.__dict__.items() if not name.startswith("__")}
 
     if hasattr(cls, "__dataclass_fields__"):
         for key, value in cls.__dataclass_fields__.items():
@@ -195,7 +189,9 @@ def create_schema(cls: Type) -> TypeSchema:
                 )
             else:
                 prop_value_type = type(prop_value)
-                if not prop_value and (prop_value_type in _default_factories or isinstance(prop_value, _default_factories)):
+                if not prop_value and (
+                    prop_value_type in _default_factories or isinstance(prop_value, _default_factories)
+                ):
                     schema[name] = Property(name, p_type, default_factory=prop_value_type)
                 else:
                     schema[name] = Property(name, p_type, default_value=prop_value)
@@ -203,4 +199,3 @@ def create_schema(cls: Type) -> TypeSchema:
             schema[name] = Property(name, p_type)
 
     return schema
-

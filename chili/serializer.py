@@ -38,7 +38,7 @@ class Serializer(Encoder, Decoder, Generic[T]):
         )
 
 
-def serializable(_cls = None) -> Any:
+def serializable(_cls=None) -> Any:
     def _decorate(cls) -> Type[C]:
         if not hasattr(cls, _PROPERTIES):
             setattr(cls, _PROPERTIES, create_schema(cls))

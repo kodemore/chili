@@ -9,11 +9,42 @@ from base64 import b64decode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from typing import Generic, Type, Any, Dict, TypeVar, Protocol, List, Union, Callable, final, get_origin, Tuple, Sequence
+from typing import (
+    Generic,
+    Type,
+    Any,
+    Dict,
+    TypeVar,
+    Protocol,
+    List,
+    Union,
+    Callable,
+    final,
+    get_origin,
+    Tuple,
+    Sequence,
+)
 
-from chili.typing import create_schema, _PROPERTIES, _DECODABLE, TypeSchema, is_dataclass, get_origin_type, \
-    resolve_forward_reference, is_enum_type, is_named_tuple, is_typed_dict, get_parameters_map, \
-    map_generic_type, is_optional, get_type_args, unpack_optional, is_decodable, UNDEFINED, is_class
+from chili.typing import (
+    create_schema,
+    _PROPERTIES,
+    _DECODABLE,
+    TypeSchema,
+    is_dataclass,
+    get_origin_type,
+    resolve_forward_reference,
+    is_enum_type,
+    is_named_tuple,
+    is_typed_dict,
+    get_parameters_map,
+    map_generic_type,
+    is_optional,
+    get_type_args,
+    unpack_optional,
+    is_decodable,
+    UNDEFINED,
+    is_class,
+)
 from .error import EncoderError, DecoderError
 from .iso_datetime import parse_iso_datetime, parse_iso_duration, parse_iso_date, parse_iso_time
 from .state import StateObject
@@ -26,7 +57,8 @@ E = TypeVar("E", bound=Enum)
 
 class TypeDecoder(Protocol):
     @abstractmethod
-    def decode(self, value): ...
+    def decode(self, value):
+        ...
 
 
 @final
@@ -38,7 +70,7 @@ class ProxyDecoder(Generic[T]):
         return self._decoder(value)
 
 
-def decodable(_cls = None) -> Any:
+def decodable(_cls=None) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class decodable
         if not hasattr(cls, _PROPERTIES):
@@ -67,40 +99,43 @@ def ordered_dict(value: List[List[Any]]) -> collections.OrderedDict:
     return result
 
 
-_builtin_type_decoders = TypeDecoders({
-    bool: ProxyDecoder[bool](bool),
-    int: ProxyDecoder[int](int),
-    float: ProxyDecoder[float](float),
-    str: ProxyDecoder[str](str),
-    bytes: ProxyDecoder[bytes](lambda value: b64decode(value.encode("utf8"))),
-    bytearray: ProxyDecoder[bytearray](lambda value: bytearray(b64decode(value.encode("utf8")))),
-    list: ProxyDecoder[list](list),
-    set: ProxyDecoder[set](set),
-    frozenset: ProxyDecoder[frozenset](frozenset),
-    tuple: ProxyDecoder[tuple](tuple),
-    dict: ProxyDecoder[dict](dict),
-    collections.OrderedDict: ProxyDecoder[collections.OrderedDict](ordered_dict),
-    collections.deque: ProxyDecoder[collections.deque](collections.deque),
-    typing.TypedDict: ProxyDecoder[typing.TypedDict](typing.TypedDict),  # type: ignore
-    typing.Dict: ProxyDecoder[dict](dict),
-    typing.List: ProxyDecoder[list](list),
-    typing.Sequence: ProxyDecoder[list](list),
-    typing.Tuple: ProxyDecoder[tuple](tuple),  # type: ignore
-    typing.Set: ProxyDecoder[set](set),
-    typing.FrozenSet: ProxyDecoder[frozenset](frozenset),
-    typing.Deque: ProxyDecoder[typing.Deque](typing.Deque),
-    typing.AnyStr: ProxyDecoder[str](str),  # type: ignore
-    decimal.Decimal: ProxyDecoder[decimal.Decimal](decimal.Decimal),
-    datetime.time: ProxyDecoder[datetime.time](parse_iso_time),
-    datetime.date: ProxyDecoder[datetime.date](parse_iso_date),
-    datetime.datetime: ProxyDecoder[datetime.datetime](parse_iso_datetime),
-    datetime.timedelta: ProxyDecoder[datetime.timedelta](parse_iso_duration),
-})
+_builtin_type_decoders = TypeDecoders(
+    {
+        bool: ProxyDecoder[bool](bool),
+        int: ProxyDecoder[int](int),
+        float: ProxyDecoder[float](float),
+        str: ProxyDecoder[str](str),
+        bytes: ProxyDecoder[bytes](lambda value: b64decode(value.encode("utf8"))),
+        bytearray: ProxyDecoder[bytearray](lambda value: bytearray(b64decode(value.encode("utf8")))),
+        list: ProxyDecoder[list](list),
+        set: ProxyDecoder[set](set),
+        frozenset: ProxyDecoder[frozenset](frozenset),
+        tuple: ProxyDecoder[tuple](tuple),
+        dict: ProxyDecoder[dict](dict),
+        collections.OrderedDict: ProxyDecoder[collections.OrderedDict](ordered_dict),
+        collections.deque: ProxyDecoder[collections.deque](collections.deque),
+        typing.TypedDict: ProxyDecoder[typing.TypedDict](typing.TypedDict),  # type: ignore
+        typing.Dict: ProxyDecoder[dict](dict),
+        typing.List: ProxyDecoder[list](list),
+        typing.Sequence: ProxyDecoder[list](list),
+        typing.Tuple: ProxyDecoder[tuple](tuple),  # type: ignore
+        typing.Set: ProxyDecoder[set](set),
+        typing.FrozenSet: ProxyDecoder[frozenset](frozenset),
+        typing.Deque: ProxyDecoder[typing.Deque](typing.Deque),
+        typing.AnyStr: ProxyDecoder[str](str),  # type: ignore
+        decimal.Decimal: ProxyDecoder[decimal.Decimal](decimal.Decimal),
+        datetime.time: ProxyDecoder[datetime.time](parse_iso_time),
+        datetime.date: ProxyDecoder[datetime.date](parse_iso_date),
+        datetime.datetime: ProxyDecoder[datetime.datetime](parse_iso_datetime),
+        datetime.timedelta: ProxyDecoder[datetime.timedelta](parse_iso_duration),
+    }
+)
 
 
 class ListDecoder(TypeDecoder):
     def __init__(self, item_decoder: TypeDecoder):
         self.item_decoder = item_decoder
+
     def decode(self, value: list) -> list:
         res = []
         for item in value:
@@ -141,10 +176,8 @@ class DictDecoder(TypeDecoder):
         self.key_decoder, self.value_decoder = encoders
 
     def decode(self, value: dict) -> dict:
-        return {
-            self.key_decoder.decode(i_key): self.value_decoder.decode(i_value)
-            for i_key, i_value in value.items()
-        }
+        return {self.key_decoder.decode(i_key): self.value_decoder.decode(i_value) for i_key, i_value in value.items()}
+
 
 class OrderedDictDecoder(TypeDecoder):
     def __init__(self, decoders: List[TypeDecoder]):
@@ -232,7 +265,9 @@ class ClassDecoder(TypeDecoder):
         instance = self.class_name.__new__(self.class_name)  # type: ignore
 
         for key, prop in self._schema.items():
-            prop_value = self._fields[key].decode(value[key]) if key in value else getattr(prop, 'default_value', UNDEFINED)
+            prop_value = (
+                self._fields[key].decode(value[key]) if key in value else getattr(prop, "default_value", UNDEFINED)
+            )
             if prop_value is not UNDEFINED:
                 setattr(instance, key, prop_value)
 
@@ -254,7 +289,6 @@ class GenericClassDecoder(ClassDecoder):
         self._generic_parameters = get_parameters_map(class_name)
         type_: Type = get_origin_type(class_name)  # type: ignore
         super().__init__(type_)
-
 
     def _build_type_decoder(self, a_type: Type) -> TypeDecoder:
         return build_type_decoder(
@@ -295,9 +329,7 @@ class NamedTupleDecoder(TypeDecoder):
     def _build(self) -> None:
         field_types = self.class_name.__annotations__
         for item_type in field_types.values():
-            self._arg_decoders.append(
-                build_type_decoder(item_type, module=self.class_name.__module__)
-            )
+            self._arg_decoders.append(build_type_decoder(item_type, module=self.class_name.__module__))
 
 
 class TypedDictDecoder(TypeDecoder):
@@ -391,8 +423,9 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
     if origin_type not in _supported_generics:
         raise DecoderError.invalid_type(a_type)
 
-    type_attributes: List[TypeDecoder] = [build_type_decoder(subtype, module=module) if subtype is not ... else ...
-                                          for subtype in get_type_args(a_type)]
+    type_attributes: List[TypeDecoder] = [
+        build_type_decoder(subtype, module=module) if subtype is not ... else ... for subtype in get_type_args(a_type)
+    ]
     if len(type_attributes) == 1:
         return _supported_generics[origin_type](type_attributes[0])
 
@@ -424,21 +457,14 @@ class Decoder(Generic[T]):
             else:
                 value = self._decoders[prop.name].decode(obj[key])
 
-            setattr(
-                instance,
-                prop.name,
-                value
-            )
+            setattr(instance, prop.name, value)
 
         return instance
 
     def _build_decoders(self) -> Dict[str, TypeDecoder]:
         schema: TypeSchema = getattr(self.__generic__, _PROPERTIES)
 
-        return {
-            prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders)
-            for prop in schema.values()
-        }
+        return {prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders) for prop in schema.values()}
 
     @classmethod
     def __class_getitem__(cls, item: Type) -> Type[Decoder]:  # noqa: E501

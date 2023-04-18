@@ -72,10 +72,7 @@ class Mapper:
                 result[new_key] = self._map(value, item_scheme, skip_keys, default_value)
                 continue
             elif isinstance(value, Iterable):
-                result[new_key] = [
-                    self._map(item, item_scheme, skip_keys, default_value)
-                    for item in iter(value)
-                ]
+                result[new_key] = [self._map(item, item_scheme, skip_keys, default_value) for item in iter(value)]
                 continue
             else:
                 raise MapperError.invalid_value
