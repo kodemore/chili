@@ -23,6 +23,10 @@ poetry add chili
 
 The library provides three main classes for encoding and decoding objects, `chili.Encoder` and `chili.Decoder`, and `chili.Serializer`, which combines both functionalities.
 
+Convinient functions are also provided for encoding and decoding objects, `chili.encode` and `chili.decode`.
+
+Additionally, library by default supports json serialization and deserialization, so you can use `chili.JsonDecoder`, and `chili.JsonDecoder`, and `chili.JsonSerializer` or its functional replacement `chili.json_encode` and `chili.json_decode` to serialize and deserialize objects to and from json.
+
 ## Defining encodable/decodable properties
 To define the properties of a class that should be encoded and decoded, you need to define them with type annotations. 
 The `@encodable`, `@decodable`, or `@serializable` decorator should also be used to mark the class as encodable/decodable or serializable.
@@ -195,6 +199,8 @@ The `encoded` value will be a json string:
 ```
 
 The `decoded` value will be an instance of a Pet object.
+
+> Functional interface is also available through the `chili.json_encode`, `chili.json_decode` functions.
 
 ## Mapping
 
