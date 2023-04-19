@@ -22,7 +22,7 @@ license = "MIT"
 name = "chili"
 readme = "README.md"
 repository = "https://github.com/kodemore/chili"
-version = "2.0.0"
+version = "2.0.1"
 
 [tool.poetry.dependencies]
 python = "^3.8"

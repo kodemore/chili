@@ -7,6 +7,8 @@ from enum import Enum
 from inspect import isclass as is_class
 from typing import Any, Dict, List, Optional, Type, Union, ClassVar, NewType, Callable
 
+from chili.error import SerialisationError
+
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
 _PROPERTIES = "__typed_properties__"
@@ -117,10 +119,18 @@ def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
     return type_name
 
 
-def resolve_forward_reference(module: Any, ref: typing.ForwardRef) -> Any:
-    name = ref.__forward_arg__
+def resolve_forward_reference(module: Any, ref: Union[typing.ForwardRef, str]) -> Any:
+    if isinstance(ref, typing.ForwardRef):
+        name = ref.__forward_arg__
+    else:
+        name = ref
     if name in sys.modules[module].__dict__:
         return sys.modules[module].__dict__[name]
+
+    if name in sys.modules["builtins"].__dict__:
+        return sys.modules["builtins"].__dict__[name]
+
+
 
     return None
 
@@ -157,7 +167,10 @@ _default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
 
 
 def create_schema(cls: Type) -> TypeSchema:
-    properties = cls.__dict__.get("__annotations__", {})
+    try:
+        properties = typing.get_type_hints(cls)
+    except NameError as e:
+        raise SerialisationError.invalid_type from e
 
     schema = TypeSchema({})
     base_classes = [base_class for base_class in cls.__mro__[1:-1] if hasattr(base_class, _PROPERTIES)]
