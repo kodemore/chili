@@ -9,7 +9,19 @@ from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from typing import Generic, Type, Any, Dict, TypeVar, Protocol, List, Union, Callable, final, Tuple
+from typing import (
+    Generic,
+    Type,
+    Any,
+    Dict,
+    TypeVar,
+    Protocol,
+    List,
+    Union,
+    Callable,
+    final,
+    Tuple,
+)
 
 from chili.typing import (
     create_schema,
@@ -27,6 +39,7 @@ from chili.typing import (
     is_optional,
     get_type_args,
     unpack_optional,
+    is_newtype,
     UNDEFINED,
     is_class,
 )
@@ -173,8 +186,9 @@ class ClassEncoder(TypeEncoder):
     _fields: Dict[str, TypeEncoder]
     _schema: TypeSchema
 
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
         self.class_name = class_name
+        self._extra_encoders = extra_encoders
         self._schema = create_schema(class_name)
 
     def encode(self, value: Any) -> StateObject:
@@ -196,19 +210,22 @@ class ClassEncoder(TypeEncoder):
         return {name: self._build_type_encoder(field.type) for name, field in self._schema.items()}
 
     def _build_type_encoder(self, a_type: Type) -> TypeEncoder:
-        return build_type_encoder(a_type, module=self.class_name.__module__)  # type: ignore
+        return build_type_encoder(a_type, self._extra_encoders, self.class_name.__module__)  # type: ignore
 
 
 class GenericClassEncoder(ClassEncoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
         self._generic_type = class_name
+        self._extra_encoders = extra_encoders
         self._generic_parameters = get_parameters_map(class_name)
         type_: Type = get_origin_type(class_name)  # type: ignore
         super().__init__(type_)
 
     def _build_type_encoder(self, a_type: Type) -> TypeEncoder:
         return build_type_encoder(
-            map_generic_type(a_type, self._generic_parameters), module=self._generic_type.__module__
+            map_generic_type(a_type, self._generic_parameters),
+            self._extra_encoders,
+            self._generic_type.__module__,
         )
 
 
@@ -224,10 +241,11 @@ class EnumEncoder(TypeEncoder, Generic[E]):
 
 
 class NamedTupleEncoder(TypeEncoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
         self.type = class_name
         self._is_typed = hasattr(class_name, "__annotations__")
         self._arg_encoders: List[TypeEncoder] = []
+        self._extra_encoders = extra_encoders
         if self._is_typed:
             self._build()
 
@@ -243,15 +261,15 @@ class NamedTupleEncoder(TypeEncoder):
     def _build(self) -> None:
         field_types = self.type.__annotations__
         for item_type in field_types.values():
-            self._arg_encoders.append(build_type_encoder(item_type, module=self.type.__module__))
+            self._arg_encoders.append(build_type_encoder(item_type, self._extra_encoders, self.type.__module__))
 
 
 class TypedDictEncoder(TypeEncoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
         self.type = class_name
         self._key_encoders = {}
         for key_name, key_type in class_name.__annotations__.items():
-            self._key_encoders[key_name] = build_type_encoder(key_type, module=class_name.__module__)
+            self._key_encoders[key_name] = build_type_encoder(key_type, extra_encoders, class_name.__module__)
 
     def encode(self, value: dict) -> dict:
         return {key: self._key_encoders[key].encode(item) for key, item in value.items()}
@@ -269,15 +287,16 @@ class OptionalTypeEncoder(TypeEncoder):
 
 
 class UnionEncoder(TypeEncoder):
-    def __init__(self, supported_types: List[Type]):
+    def __init__(self, supported_types: List[Type], extra_encoders: TypeEncoders = None):
         self.supported_types = supported_types
+        self._extra_encoders = extra_encoders
 
     def encode(self, value: Any) -> Any:
         value_type = type(value)
         if value_type not in self.supported_types:
             raise EncoderError.invalid_input
 
-        return build_type_encoder(value_type).encode(value)  # type: ignore
+        return build_type_encoder(value_type, self._extra_encoders).encode(value)  # type: ignore
 
 
 _supported_generics = {
@@ -304,12 +323,12 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
     if origin_type is None and is_dataclass(a_type):
         if issubclass(a_type, Generic):  # type: ignore
             raise EncoderError.invalid_type
-        return ClassEncoder(a_type)
+        return ClassEncoder(a_type, extra_encoders)
 
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore
             return GenericClassEncoder(a_type)
-        return ClassEncoder(a_type)
+        return ClassEncoder(a_type, extra_encoders)
 
     if origin_type is None:
         origin_type = a_type
@@ -318,16 +337,16 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         return EnumEncoder(origin_type)
 
     if is_class(origin_type) and is_named_tuple(origin_type):
-        return NamedTupleEncoder(origin_type)
+        return NamedTupleEncoder(origin_type, extra_encoders)
 
     if is_class(origin_type) and is_typed_dict(origin_type):
-        return TypedDictEncoder(origin_type)
+        return TypedDictEncoder(origin_type, extra_encoders)
 
     if origin_type is Union:
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
-            return OptionalTypeEncoder(build_type_encoder(type_args[0]))  # type: ignore
-        return UnionEncoder(type_args)
+            return OptionalTypeEncoder(build_type_encoder(type_args[0], extra_encoders))  # type: ignore
+        return UnionEncoder(type_args, extra_encoders)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
         resolved_reference = resolve_forward_reference(module, a_type)
@@ -343,14 +362,21 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         return Encoder[origin_type](encoders=extra_encoders)  # type: ignore[valid-type]
 
     if is_optional(a_type):
-        return OptionalTypeEncoder(build_type_encoder(unpack_optional(a_type)))  # type: ignore
+        return OptionalTypeEncoder(build_type_encoder(unpack_optional(a_type), extra_encoders))  # type: ignore
+
+    if isinstance(a_type, TypeVar):
+        if a_type.__bound__ is None:
+            raise EncoderError.invalid_type(a_type)
+        return build_type_encoder(a_type.__bound__, extra_encoders, module)
+
+    if is_newtype(a_type):
+        return build_type_encoder(a_type.__supertype__, extra_encoders, module)
 
     if origin_type not in _supported_generics:
         raise EncoderError.invalid_type(a_type)
 
     type_attributes: List[TypeEncoder] = [
-        build_type_encoder(subtype, module=module)  # type: ignore
-        if subtype is not ... else ...
+        build_type_encoder(subtype, module=module) if subtype is not ... else ...  # type: ignore
         for subtype in get_type_args(a_type)
     ]
 
@@ -416,7 +442,9 @@ class Encoder(Generic[T]):
 
 
 def encode(
-    obj: Any, type_hint: Type = None, encoders: Union[TypeEncoders, Dict[Any, TypeEncoder]] = None
+    obj: Any,
+    type_hint: Type = None,
+    encoders: Union[TypeEncoders, Dict[Any, TypeEncoder]] = None,
 ) -> StateObject:
     if encoders and not isinstance(encoders, TypeEncoders):
         encoders = TypeEncoders(encoders)

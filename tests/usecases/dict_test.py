@@ -13,6 +13,7 @@ def test_encode_dict() -> None:
     # then
     assert result == {"name": "The Hobbit", "author": "J.R.R. Tolkien", "no_pages": 295}
 
+
 def test_decode_dict() -> None:
     # given
     book = {"name": "The Hobbit", "author": "J.R.R. Tolkien", "no_pages": "295"}
@@ -21,5 +22,8 @@ def test_decode_dict() -> None:
     result = decode(book, Dict[str, Union[str, int]])
 
     # then
-    assert result == {"name": "The Hobbit", "author": "J.R.R. Tolkien", "no_pages": "295"}
-
+    assert result == {
+        "name": "The Hobbit",
+        "author": "J.R.R. Tolkien",
+        "no_pages": "295",
+    }

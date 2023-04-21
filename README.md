@@ -17,6 +17,8 @@ To install the library, simply use pip:
 pip install chili
 ```
 
+or poetry:
+
 ```shell
 poetry add chili
 ```
@@ -24,14 +26,15 @@ poetry add chili
 # Usage
 
 The library provides three main classes for encoding and decoding objects, `chili.Encoder` and `chili.Decoder`, and `chili.Serializer`, which combines both functionalities.
-
-Convinient functions are also provided for encoding and decoding objects, `chili.encode` and `chili.decode`.
+Functional interface is also provided through `chili.encode` and `chili.decode` functions.
 
 Additionally, library by default supports json serialization and deserialization, so you can use `chili.JsonDecoder`, and `chili.JsonDecoder`, and `chili.JsonSerializer` or its functional replacement `chili.json_encode` and `chili.json_decode` to serialize and deserialize objects to and from json.
 
 ## Defining encodable/decodable properties
 To define the properties of a class that should be encoded and decoded, you need to define them with type annotations. 
 The `@encodable`, `@decodable`, or `@serializable` decorator should also be used to mark the class as encodable/decodable or serializable.
+
+> Note: Dataclasses are supported automatically, so you don't need to use the decorator.
 
 ```python
 from chili import encodable
@@ -50,7 +53,7 @@ class Pet:
 
 
 ## Encoding
-To encode an object, you need to create an instance of the `chili.Encoder` class, and then call the `encode` method, passing the object to be encoded as an argument.
+To encode an object, you need to create an instance of the `chili.Encoder` class, and then call the `encode()` method, passing the object to be encoded as an argument.
 
 > Note: The `chili.Encoder` class is a generic class, and you need to pass the type of the object to be encoded as a type argument.
 
@@ -66,7 +69,7 @@ assert encoded == {"name": "Max", "age": 3, "breed": "Golden Retriever"}
 ```
 
 ## Decoding
-To decode an object, you need to create an instance of the `chili.Decoder` class, and then call the `decode` method, passing the dictionary to be decoded as an argument.
+To decode an object, you need to create an instance of the `chili.Decoder` class, and then call the `decode()` method, passing the dictionary to be decoded as an argument.
 
 
 > Note: The `chili.Decoder` class is a generic class, and you need to pass the type of the object to be decoded as a type argument.
@@ -140,7 +143,11 @@ decoder = Decoder[Pet](decoders=type_decoders)
 ```
 
 ## Convenient Functions
-The library also provides convenient functions for encoding and decoding objects. The encode function takes an object and an optional type hint and returns a dictionary. The decode function takes a dictionary, a type hint, and optional custom decoders and returns an object.
+The library also provides convenient functions for encoding and decoding objects. 
+
+The `chili.encode` function takes an object and an optional type hint and returns a dictionary. 
+
+The `chili.decode` function takes a dictionary, a type hint, and returns an object.
 
 ```python
 from chili import encode, decode
@@ -150,6 +157,8 @@ my_pet = Pet("Max", 3, "Golden Retriever")
 encoded = encode(my_pet)
 decoded = decode(encoded, Pet)
 ```
+
+> To specify custom type encoders and decoders, you can pass them as keyword arguments to the `chili.encode` and `chili.decode` functions.
 
 ## Serialization
 If your object is both encodable and decodable, you can use the `@serializable` decorator to mark it as such. You can then use the `chili.Serializer` class to encode and decode objects.
@@ -372,3 +381,177 @@ decoder = Decoder[Pet]()
 invalid_data = {"name": "Max", "age": "three", "breed": "Golden Retriever"}
 decoded = decoder.decode(invalid_data)  # Raises DecoderError.invalid_input
 ```
+
+## Supported types
+
+The following section lists all the data types supported by the library and explains how they are decoded and encoded. The supported data types include built-in Python types like `bool`, `dict`, `float`, `int`, `list`, `set`, `str`, and `tuple`, as well as more complex types like `collections.namedtuple`, `collections.deque`, `collections.OrderedDict`, `datetime.date`, `datetime.datetime`, `datetime.time`, `datetime.timedelta`, `decimal.Decimal`, `enum.Enum`, `enum.IntEnum`, and various types defined in the typing module.
+
+### Simple types
+
+Simple type are handled by a ProxyEncoder and ProxyDecoder. These types are decoded and encoded by casting the value to the specified type.
+
+
+> For more details please refer to [chili.encoder.ProxyEncoder](chili/encoder.py#L50) and [chili.decoder.ProxyDecoder](chili/decoder.py#L65).
+
+#### `bool`
+
+Passed value is automatically cast to a boolean with python's built-in `bool` type during decoding and encoding process.
+
+#### `int`
+
+Passed value is automatically cast to an int with python's built-in `int` type during decoding and encoding process.
+
+#### `float`
+
+Passed value is automatically cast to float with python's built-in `float` type during decoding and encoding process.
+
+
+#### `str`
+
+Passed value is automatically cast to string with python's built-in `str` during encoding and decoding process.
+
+
+#### `set`
+
+Passed value is automatically cast to either `set` during decoding process or `list` during encoding process.
+
+
+#### `frozenset`
+
+Passed value is automatically cast to either `frozenset` during decoding process or `list` during encoding process.
+
+#### `list`
+
+Passed value is automatically cast to list with python's built-in `list` during encoding and decoding process.
+
+#### `tuple`
+
+Passed value is automatically cast either to `tuple` during decoding process or to `list` during encoding process.
+
+
+#### `dict`
+
+Passed value is automatically cast to dict with python's built-in `dict` during encoding and decoding process.
+
+### Complex types
+
+Complex types are handled by corresponding Encoder and Decoder classes. 
+
+#### `collections.namedtuple`
+
+Passed value is automatically cast to either `collections.namedtuple` during decoding process or `list` during encoding process.
+
+> Please refer to [chili.encoder.NamedTupleEncoder](chili/encoder.py#L226) and [chili.decoder.NamedTupleDecoder](chili/decoder.py#L307) for more details.
+
+#### `collections.deque`
+
+Passed value is automatically cast to either `collections.deque` during decoding process or `list` during encoding process.
+
+> Please refer to [chili.encoder.DequeEncoder](chili/encoder.py#L187) and [chili.decoder.DequeDecoder](chili/decoder.py#L268) for more details.
+
+#### `collections.OrderedDict`
+
+Passed value is automatically cast to either `collections.OrderedDict` during decoding process or `list` where each item is a `list` of two elements corresponding to `key` and `value`, during encoding process.
+
+#### `datetime.date`
+
+Passed value must be valid ISO-8601 date string, then it is automatically hydrated to an instance of `datetime.date` 
+class and extracted to ISO-8601 format compatible string.
+
+#### `datetime.datetime`
+
+Passed value must be valid ISO-8601 date time string, then it is automatically hydrated to an instance of `datetime.datetime` 
+class and extracted to ISO-8601 format compatible string.
+
+#### `datetime.time`
+
+Passed value must be valid ISO-8601 time string, then it is automatically hydrated to an instance of `datetime.time` 
+class and extracted to ISO-8601 format compatible string.
+
+#### `datetime.timedelta`
+
+Passed value must be valid ISO-8601 duration string, then it is automatically hydrated to an instance of `datetime.timedelta`
+class and extracted to ISO-8601 format compatible string.
+
+#### `decimal.Decimal`
+
+Passed value must be a string containing valid decimal number representation, for more please read python's manual
+about [`decimal.Decimal`](https://docs.python.org/3/library/decimal.html#decimal.Decimal), on extraction value is
+extracted back to string.
+
+#### `enum.Enum`
+
+Supports hydration of all instances of `enum.Enum` subclasses as long as value can be assigned
+to one of the members defined in the specified `enum.Enum` subclass. During extraction the value is
+extracted to value of the enum member.
+
+#### `enum.IntEnum`
+
+Same as `enum.Enum`.
+
+### Typing module support
+
+#### `typing.Any`
+
+Passed value is unchanged during hydration and extraction process.
+
+#### `typing.AnyStr`
+
+Same as `str`
+
+#### `typing.Deque`
+
+Same as `collection.dequeue` with one exception, if subtype is defined, eg `typing.Deque[int]` each item inside queue
+is hydrated accordingly to subtype.
+
+#### `typing.Dict`
+
+Same as `dict` with exception that keys and values are respectively hydrated and extracted to match
+annotated type.
+
+#### `typing.FrozenSet`
+
+Same as `frozenset` with exception that values of a frozen set are respectively hydrated and extracted to
+match annotated type.
+
+#### `typing.List`
+
+Same as `list` with exception that values of a list are respectively hydrated and extracted to match annotated type.
+
+#### `typing.NamedTuple`
+
+Same as `namedtuple`.
+
+#### `typing.Set`
+
+Same as `set` with exception that values of a set are respectively hydrated and extracted to match annotated type.
+
+#### `typing.Tuple`
+
+Same as `tuple` with exception that values of a set are respectively hydrated and extracted to match annotated types.
+Ellipsis operator (`...`) is also supported.
+
+#### `typing.TypedDict`
+
+Same as `dict` but values of a dict are respectively hydrated and extracted to match annotated types. 
+
+
+#### `typing.Generic`
+
+Only parametrised generic classes are supported, dataclasses that extends other Generic classes without parametrisation will fail.
+
+
+#### `typing.Optional`
+
+Optional types can carry additional `None` value which chili's hydration process will respect, so for example 
+if your type is `typing.Optional[int]` `None` value is not hydrated to `int`.
+
+
+#### `typing.Union`
+
+Limited support for Unions.
+
+
+
+
+

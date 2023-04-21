@@ -29,6 +29,7 @@ def test_can_decode_dataclass() -> None:
     assert result.age == 3
     assert result.favourite_food == ["7", "bones"]
 
+
 def test_can_encode_dataclass() -> None:
     # given
     @dataclass
@@ -66,9 +67,7 @@ def test_can_encode_nested_dataclasses() -> None:
         tags: List[Tag]
 
     book = Book(
-        "The Hobbit",
-        Author("J.R.R.", "Tolkien"),
-        [Tag("Fantasy"), Tag("Adventure")]
+        "The Hobbit", Author("J.R.R.", "Tolkien"), [Tag("Fantasy"), Tag("Adventure")]
     )
 
     encoder = Encoder[Book]()
@@ -80,14 +79,8 @@ def test_can_encode_nested_dataclasses() -> None:
     assert isinstance(result, dict)
     assert result == {
         "name": "The Hobbit",
-        "author": {
-            "first_name": "J.R.R.",
-            "last_name": "Tolkien"
-        },
-        "tags": [
-            {"name": "Fantasy"},
-            {"name": "Adventure"}
-        ]
+        "author": {"first_name": "J.R.R.", "last_name": "Tolkien"},
+        "tags": [{"name": "Fantasy"}, {"name": "Adventure"}],
     }
 
 
@@ -111,7 +104,7 @@ def test_can_decode_nested_dataclasses() -> None:
     book_data = {
         "name": "The Hobbit",
         "author": {"first_name": "J.R.R.", "last_name": "Tolkien"},
-        "tags": [{"name": "Fantasy"}, {"name": "Adventure"}]
+        "tags": [{"name": "Fantasy"}, {"name": "Adventure"}],
     }
 
     decoder = Decoder[Book]()
@@ -176,7 +169,11 @@ def test_fail_decode_non_parametrized_generic_class() -> None:
     class TaggedBook(Book[str]):
         pass
 
-    tagged_book_data = {"name": "The Hobbit", "author": "J.R.R. Tolkien", "tags": ["Fantasy"]}
+    tagged_book_data = {
+        "name": "The Hobbit",
+        "author": "J.R.R. Tolkien",
+        "tags": ["Fantasy"],
+    }
 
     # when
     with pytest.raises(DecoderError):

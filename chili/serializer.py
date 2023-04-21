@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from typing import Type, Any, TypeVar, Generic
 
-from chili.typing import _DECODABLE, _ENCODABLE, _PROPERTIES, create_schema, is_class, is_dataclass
+from chili.typing import (
+    _DECODABLE,
+    _ENCODABLE,
+    _PROPERTIES,
+    create_schema,
+    is_class,
+    is_dataclass,
+)
 from chili.decoder import Decoder
 from chili.encoder import Encoder
 from chili.error import SerialisationError

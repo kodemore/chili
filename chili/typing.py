@@ -67,6 +67,15 @@ def is_optional(type_name: Type) -> bool:
     )
 
 
+def is_newtype(type_name: Type) -> bool:
+    if not hasattr(type_name, "__qualname__"):
+        return False
+    if type_name.__qualname__ != "NewType.<locals>.new_type":
+        return False
+
+    return True
+
+
 def get_type_parameters(type_name: Type) -> List[Type]:
     return getattr(get_origin_type(type_name), "__parameters__", [])
 
@@ -130,8 +139,6 @@ def resolve_forward_reference(module: Any, ref: Union[typing.ForwardRef, str]) -
     if name in sys.modules["builtins"].__dict__:
         return sys.modules["builtins"].__dict__[name]
 
-
-
     return None
 
 
@@ -139,7 +146,11 @@ class Property:
     __slots__ = ("name", "type", "_default_value", "_default_factory")
 
     def __init__(
-        self, name: str, property_type: Type, default_value: Any = UNDEFINED, default_factory: Callable = None
+        self,
+        name: str,
+        property_type: Type,
+        default_value: Any = UNDEFINED,
+        default_factory: Callable = None,
     ):
         self.name = name
         self.type = property_type

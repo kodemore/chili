@@ -15,11 +15,10 @@ def test_can_decode_forward_reference():
         author: Author
         tags: List[str]
 
-
     book_data = {
         "title": "The Hitchhiker's Guide to the Galaxy",
         "author": {"name": "Douglas Adams"},
-        "tags": ["sci-fi"]
+        "tags": ["sci-fi"],
     }
 
     # when
@@ -33,6 +32,7 @@ def test_can_decode_forward_reference():
 def test_fails_decode_forward_reference_with_inaccessible_locals() -> None:
     # given
     with pytest.raises(SerialisationError):
+
         @serializable
         class Book:
             title: str
@@ -42,7 +42,6 @@ def test_fails_decode_forward_reference_with_inaccessible_locals() -> None:
     @serializable
     class LocalAuthor:
         name: str
-
 
 
 @serializable

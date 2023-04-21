@@ -17,10 +17,19 @@ from chili.iso_datetime import (
         ("202010", time(hour=20, minute=20, second=10, microsecond=0)),
         ("202010.000001", time(hour=20, minute=20, second=10, microsecond=1)),
         ("20:20:10.000001", time(hour=20, minute=20, second=10, microsecond=1)),
-        ("20:20:10.000001Z", time(hour=20, minute=20, second=10, microsecond=1, tzinfo=timezone.utc)),
+        (
+            "20:20:10.000001Z",
+            time(hour=20, minute=20, second=10, microsecond=1, tzinfo=timezone.utc),
+        ),
         (
             "20:20:10.000001+02:00",
-            time(hour=20, minute=20, second=10, microsecond=1, tzinfo=timezone(timedelta(hours=2))),
+            time(
+                hour=20,
+                minute=20,
+                second=10,
+                microsecond=1,
+                tzinfo=timezone(timedelta(hours=2)),
+            ),
         ),
     ],
 )
@@ -81,19 +90,51 @@ def test_parse_timedelta_to_iso_string(given: timedelta, expected: str) -> None:
     [
         (
             "20201010T202010",
-            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10, microsecond=0),
+            datetime(
+                year=2020,
+                month=10,
+                day=10,
+                hour=20,
+                minute=20,
+                second=10,
+                microsecond=0,
+            ),
         ),
         (
             "20201010T202010.000001",
-            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10, microsecond=1),
+            datetime(
+                year=2020,
+                month=10,
+                day=10,
+                hour=20,
+                minute=20,
+                second=10,
+                microsecond=1,
+            ),
         ),
         (
             "2020-10-10T20:20:10.000001",
-            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10, microsecond=1),
+            datetime(
+                year=2020,
+                month=10,
+                day=10,
+                hour=20,
+                minute=20,
+                second=10,
+                microsecond=1,
+            ),
         ),
         (
             "2020-10-10 20:20:10.000001",
-            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10, microsecond=1),
+            datetime(
+                year=2020,
+                month=10,
+                day=10,
+                hour=20,
+                minute=20,
+                second=10,
+                microsecond=1,
+            ),
         ),
         (
             "2020-10-10 20:20:10.000001Z",

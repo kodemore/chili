@@ -44,9 +44,15 @@ from chili.typing import (
     is_decodable,
     UNDEFINED,
     is_class,
+    is_newtype,
 )
-from .error import EncoderError, DecoderError
-from .iso_datetime import parse_iso_datetime, parse_iso_duration, parse_iso_date, parse_iso_time
+from .error import DecoderError
+from .iso_datetime import (
+    parse_iso_datetime,
+    parse_iso_duration,
+    parse_iso_date,
+    parse_iso_time,
+)
 from .state import StateObject
 
 C = TypeVar("C")
@@ -251,9 +257,10 @@ class ClassDecoder(TypeDecoder):
     _fields: Dict[str, TypeDecoder]
     _schema: TypeSchema
 
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_decoders: TypeDecoders = None):
         self.class_name = class_name
         self._schema = create_schema(class_name)
+        self._extra_decoders = extra_decoders
 
     def decode(self, value: StateObject) -> Any:
         if not isinstance(value, dict):
@@ -280,19 +287,22 @@ class ClassDecoder(TypeDecoder):
         return {name: self._build_type_decoder(field.type) for name, field in self._schema.items()}
 
     def _build_type_decoder(self, a_type: Type) -> TypeDecoder:
-        return build_type_decoder(a_type, module=self.class_name.__module__)  # type: ignore
+        return build_type_decoder(a_type, self._extra_decoders, self.class_name.__module__)  # type: ignore
 
 
 class GenericClassDecoder(ClassDecoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_decoders: TypeDecoders = None):
         self._generic_type = class_name
         self._generic_parameters = get_parameters_map(class_name)
+        self._extra_decoders = extra_decoders
         type_: Type = get_origin_type(class_name)  # type: ignore
         super().__init__(type_)
 
     def _build_type_decoder(self, a_type: Type) -> TypeDecoder:
         return build_type_decoder(
-            map_generic_type(a_type, self._generic_parameters), module=self._generic_type.__module__
+            map_generic_type(a_type, self._generic_parameters),
+            self._extra_decoders,
+            self._generic_type.__module__,
         )
 
 
@@ -305,10 +315,11 @@ class EnumDecoder(TypeDecoder, Generic[E]):
 
 
 class NamedTupleDecoder(TypeDecoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_decoders: TypeDecoders = None):
         self.class_name = class_name
         self._is_typed = hasattr(class_name, "__annotations__")
         self._arg_decoders: List[TypeDecoder] = []
+        self._extra_decoders = extra_decoders
         if self._is_typed:
             self._build()
 
@@ -329,15 +340,16 @@ class NamedTupleDecoder(TypeDecoder):
     def _build(self) -> None:
         field_types = self.class_name.__annotations__
         for item_type in field_types.values():
-            self._arg_decoders.append(build_type_decoder(item_type, module=self.class_name.__module__))
+            self._arg_decoders.append(build_type_decoder(item_type, self._extra_decoders, self.class_name.__module__))
 
 
 class TypedDictDecoder(TypeDecoder):
-    def __init__(self, class_name: Type):
+    def __init__(self, class_name: Type, extra_decoders: TypeDecoders = None):
         self.class_name = class_name
         self._key_decoders = {}
+        self._extra_decoders = extra_decoders
         for key_name, key_type in class_name.__annotations__.items():
-            self._key_decoders[key_name] = build_type_decoder(key_type, module=class_name.__module__)
+            self._key_decoders[key_name] = build_type_decoder(key_type, self._extra_decoders, class_name.__module__)
 
     def decode(self, value: dict) -> dict:
         return {key: self._key_decoders[key].decode(item) for key, item in value.items()}
@@ -378,12 +390,12 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
     if origin_type is None and is_dataclass(a_type):
         if issubclass(a_type, Generic):  # type: ignore
             raise DecoderError.invalid_type
-        return ClassDecoder(a_type)
+        return ClassDecoder(a_type, extra_decoders)
 
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore
             return GenericClassDecoder(a_type)
-        return ClassDecoder(a_type)
+        return ClassDecoder(a_type, extra_decoders)
 
     if origin_type is None:
         origin_type = a_type
@@ -392,10 +404,10 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         return EnumDecoder(origin_type)
 
     if is_class(origin_type) and is_named_tuple(origin_type):
-        return NamedTupleDecoder(origin_type)
+        return NamedTupleDecoder(origin_type, extra_decoders)
 
     if is_class(origin_type) and is_typed_dict(origin_type):
-        return TypedDictDecoder(origin_type)
+        return TypedDictDecoder(origin_type, extra_decoders)
 
     if origin_type is Union:
         type_args = get_type_args(a_type)
@@ -407,6 +419,14 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         resolved_reference = resolve_forward_reference(module, a_type)
         if resolved_reference is not None:
             return Decoder[resolved_reference](decoders=extra_decoders)  # type: ignore
+
+    if isinstance(a_type, TypeVar):
+        if a_type.__bound__ is None:
+            raise DecoderError.invalid_type(a_type)
+        return build_type_decoder(a_type.__bound__, extra_decoders, module)
+
+    if is_newtype(a_type):
+        return build_type_decoder(a_type.__supertype__, extra_decoders, module)
 
     if get_origin(origin_type) is not None:
         raise DecoderError.invalid_type(a_type)
@@ -421,8 +441,7 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         raise DecoderError.invalid_type(a_type)
 
     type_attributes: List[Union[TypeDecoder, Any]] = [
-        build_type_decoder(subtype, module=module)  # type: ignore
-        if subtype is not ... else ...
+        build_type_decoder(subtype, module=module) if subtype is not ... else ...  # type: ignore
         for subtype in get_type_args(a_type)
     ]
     if len(type_attributes) == 1:
@@ -471,7 +490,7 @@ class Decoder(Generic[T]):
     @classmethod
     def __class_getitem__(cls, item: Type) -> Type[Decoder]:  # noqa: E501
         if not isclass(item):
-            raise EncoderError.invalid_generic_type
+            raise DecoderError.invalid_generic_type
 
         if is_dataclass(item):
             item = decodable(item)
@@ -488,7 +507,11 @@ class Decoder(Generic[T]):
         )
 
 
-def decode(obj: StateObject, a_type: Type[T], decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None) -> T:
+def decode(
+    obj: StateObject,
+    a_type: Type[T],
+    decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None,
+) -> T:
     if decoders and not isinstance(decoders, TypeDecoders):
         decoders = TypeDecoders(decoders)
 

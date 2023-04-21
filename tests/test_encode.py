@@ -9,37 +9,35 @@ import pytest
 from chili import encodable, encode
 
 
-@pytest.mark.parametrize("a_type, given, expected", [
-    (int, "1", 1),
-    (int, 1, 1),
-    (int, True, 1),
-    (int, False, 0),
-    (int, b"12", 12),
-    (int, 10.21, 10),
-
-    (str, "a", "a"),
-    (str, 1, "1"),
-    (str, True, "True"),
-    (str, 10.21, "10.21"),
-
-    (float, "1.2", 1.2),
-    (float, b"1.2", 1.2),
-
-    (bool, "", False),
-    (bool, b"", False),
-    (bool, 1, True),
-    (bool, 1.2, True),
-
-    (bytes, b"", ""),
-    (bytes, b"123", "MTIz"),
-
-    (list, [1, 2, 3], [1, 2, 3]),
-    (List, [1, 2, 3], [1, 2, 3]),
-    (set, {1, 2, 3}, [1, 2, 3]),
-    (Set, {1, 2, 3}, [1, 2, 3]),
-    (tuple, (1, 2, 3), [1, 2, 3]),
-    (Tuple, (1, 2, 3), [1, 2, 3]),
-])
+@pytest.mark.parametrize(
+    "a_type, given, expected",
+    [
+        (int, "1", 1),
+        (int, 1, 1),
+        (int, True, 1),
+        (int, False, 0),
+        (int, b"12", 12),
+        (int, 10.21, 10),
+        (str, "a", "a"),
+        (str, 1, "1"),
+        (str, True, "True"),
+        (str, 10.21, "10.21"),
+        (float, "1.2", 1.2),
+        (float, b"1.2", 1.2),
+        (bool, "", False),
+        (bool, b"", False),
+        (bool, 1, True),
+        (bool, 1.2, True),
+        (bytes, b"", ""),
+        (bytes, b"123", "MTIz"),
+        (list, [1, 2, 3], [1, 2, 3]),
+        (List, [1, 2, 3], [1, 2, 3]),
+        (set, {1, 2, 3}, [1, 2, 3]),
+        (Set, {1, 2, 3}, [1, 2, 3]),
+        (tuple, (1, 2, 3), [1, 2, 3]),
+        (Tuple, (1, 2, 3), [1, 2, 3]),
+    ],
+)
 def test_can_encode_primitive(a_type, given, expected) -> None:
     # when
     result = encode(given, a_type)
@@ -70,11 +68,7 @@ def test_encode_dataclass() -> None:
     result = encode(fluffy)
 
     # then
-    assert result == {
-        "age": 10,
-        "name": "Fluffy",
-        "favs": ["bone", "ball"]
-    }
+    assert result == {"age": 10, "name": "Fluffy", "favs": ["bone", "ball"]}
 
 
 def test_encode_enum() -> None:
@@ -90,8 +84,7 @@ def test_encode_enum() -> None:
     result = encode(colour)
 
     # then
-    assert  result == "RED"
-
+    assert result == "RED"
 
 
 def test_can_encode_empty_encodable_type() -> None:
@@ -165,7 +158,7 @@ def test_can_encode_nested_encodables() -> None:
         "children": [
             {"name": "first", "value": ""},
             {"name": "second_value", "value": "second"},
-        ]
+        ],
     }
 
 
@@ -184,6 +177,7 @@ def test_encode_named_tuple() -> None:
 def test_encode_generic_type() -> None:
     # given
     T = TypeVar("T")
+
     @dataclass
     class MyList(Generic[T]):
         count: int
@@ -201,9 +195,9 @@ def test_encode_generic_type() -> None:
     assert result == {
         "count": 2,
         "pets": [
-            {"name": "Pimpek", "age": 2 },
+            {"name": "Pimpek", "age": 2},
             {"name": "Bobik", "age": 5},
-        ]
+        ],
     }
 
 

@@ -26,6 +26,7 @@ def test_can_decode_dataclass() -> None:
     assert result.age == 3
     assert result.favourite_food == ["7", "bones"]
 
+
 def test_can_decode_dataclass_with_optional() -> None:
     # given
     @dataclass
@@ -62,11 +63,13 @@ def test_can_decode_optional_str() -> None:
 def test_can_decode_generic_dataclass() -> None:
     # given
     T = TypeVar("T")
+
     @dataclass
     class Pet(Generic[T]):
         name: str
         age: int
         favourites: List[T]
+
     data = {"name": "Fido", "age": 3, "favourites": [7, "8"]}
 
     # when
@@ -108,6 +111,7 @@ def test_can_decode_union_dataclass_types() -> None:
     assert isinstance(person, Person)
     assert isinstance(pet, Pet)
 
+
 def test_decode_union_decodables() -> None:
     # given
     @decodable
@@ -121,7 +125,7 @@ def test_decode_union_decodables() -> None:
         age: int
         address: str
 
-    person_data =  {"name": "Bobik", "age": 3, "address": "123 Fake Street"}
+    person_data = {"name": "Bobik", "age": 3, "address": "123 Fake Street"}
     pet_data = {"name": "Bobik", "age": 3}
 
     # when
@@ -146,6 +150,7 @@ def test_can_decode_str_enum() -> None:
     # then
     assert result == PetType.DOG
 
+
 def test_fail_decode_str_enum() -> None:
     # given
     class PetType(str, Enum):
@@ -157,6 +162,7 @@ def test_fail_decode_str_enum() -> None:
     # when
     with pytest.raises(ValueError):
         decode(data, PetType)
+
 
 def test_fail_decode_int_enum() -> None:
     # given

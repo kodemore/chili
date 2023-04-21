@@ -1,4 +1,11 @@
-from chili import decodable, JsonDecoder, JsonEncoder, JsonSerializer, encodable, serializable
+from chili import (
+    decodable,
+    JsonDecoder,
+    JsonEncoder,
+    JsonSerializer,
+    encodable,
+    serializable,
+)
 
 
 def test_can_instantiate_json_decoder() -> None:
@@ -28,6 +35,7 @@ def test_can_instantiate_json_encoder() -> None:
     assert isinstance(instance, JsonEncoder)
     assert instance.__generic__ == Example
 
+
 def test_can_json_decode() -> None:
     # given
     @decodable
@@ -54,6 +62,7 @@ def test_can_json_decode() -> None:
     assert isinstance(result.author, Author)
     assert result.author.first_name == "J.R.R."
     assert result.author.last_name == "Tolkien"
+
 
 def test_can_json_encode() -> None:
     # given
@@ -84,7 +93,10 @@ def test_can_json_encode() -> None:
     result = encoder.encode(book)
 
     # then
-    assert result == '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+    assert (
+        result
+        == '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+    )
 
 
 def test_fail_decode_invalid_json() -> None:

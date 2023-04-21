@@ -57,6 +57,7 @@ def test_can_preserve_keys() -> None:
         "email": None,
     }
 
+
 def test_can_skip_keys() -> None:
     # given
     scheme = {
@@ -79,6 +80,7 @@ def test_can_skip_keys() -> None:
         "first_name": "Bob",
     }
 
+
 def test_can_include_extra_keys() -> None:
     # given
     scheme = {
@@ -86,11 +88,7 @@ def test_can_include_extra_keys() -> None:
         ...: True,
     }
 
-    raw_data = {
-        "firstName": "Bob",
-        "lastName": "Feta",
-        "age": 20
-    }
+    raw_data = {"firstName": "Bob", "lastName": "Feta", "age": 20}
 
     # when
     mapper = Mapper(scheme)
@@ -98,11 +96,7 @@ def test_can_include_extra_keys() -> None:
 
     # then
     assert isinstance(result, dict)
-    assert result == {
-        "first_name": "Bob",
-        "lastName": "Feta",
-        "age": 20
-    }
+    assert result == {"first_name": "Bob", "lastName": "Feta", "age": 20}
 
 
 def test_can_map_dynamically_keys() -> None:
@@ -111,11 +105,7 @@ def test_can_map_dynamically_keys() -> None:
         ...: lambda key, value: (f"mapped_{key}", value),
     }
 
-    raw_data = {
-        "firstName": "Bob",
-        "lastName": "Feta",
-        "age": 20
-    }
+    raw_data = {"firstName": "Bob", "lastName": "Feta", "age": 20}
 
     # when
     mapper = Mapper(scheme)
@@ -135,10 +125,7 @@ def test_can_map_data_with_nested_mapping() -> None:
     scheme = {
         "name": "pet",
         "age": "petAge",
-        "tag": KeyScheme(
-            key="petTag",
-            scheme={"name": "pet_tag"}
-        ),
+        "tag": KeyScheme(key="petTag", scheme={"name": "pet_tag"}),
     }
     raw_data = {
         "pet": "Pimpek",
@@ -153,25 +140,14 @@ def test_can_map_data_with_nested_mapping() -> None:
     result = data_mapper.map(raw_data)
 
     # then
-    assert result == {
-        "name": "Pimpek",
-        "age": 4,
-        "tag": {
-            "name": "tag-1"
-        }
-    }
+    assert result == {"name": "Pimpek", "age": 4, "tag": {"name": "tag-1"}}
 
 
 def test_can_map_data_with_nested_list_mapping() -> None:
     scheme = {
         "name": "pet",
         "age": "petAge",
-        "tags": KeyScheme(
-            "petTags",
-            {
-                "name": "pet_tag"
-            }
-        )
+        "tags": KeyScheme("petTags", {"name": "pet_tag"}),
     }
     raw_data = {
         "pet": "Pimpek",
@@ -270,7 +246,12 @@ def test_can_use_callable_in_key_mapper() -> None:
     assert result == {
         "name": "Pimpek",
         "age": 4,
-        "tags": [{"name": "tag-1"}, {"name": "tag-2"}, {"name": "tag-3"}, {"name": "tag-4"}],
+        "tags": [
+            {"name": "tag-1"},
+            {"name": "tag-2"},
+            {"name": "tag-3"},
+            {"name": "tag-4"},
+        ],
     }
 
 
@@ -343,26 +324,25 @@ def test_can_map_nested_dict_without_key_change() -> None:
 def test_can_map_complex_format() -> None:
     # given
     raw_data = {
-        "Authors":{"SS":["Author1","Author2"]},
-        "Dimensions":{"S":"8.5 x 11.0 x 1.5"},
-        "ISBN":{"S":"333-3333333333"},
-        "Id":{"N":"103"},
-        "Title":{"S":"Book 103 Title"},
+        "Authors": {"SS": ["Author1", "Author2"]},
+        "Dimensions": {"S": "8.5 x 11.0 x 1.5"},
+        "ISBN": {"S": "333-3333333333"},
+        "Id": {"N": "103"},
+        "Title": {"S": "Book 103 Title"},
     }
 
     # when
-    result = Mapper({
-        ...: lambda key,value: (key.lower(), list(value.values())[0]),
-    }).map(raw_data)
+    result = Mapper(
+        {
+            ...: lambda key, value: (key.lower(), list(value.values())[0]),
+        }
+    ).map(raw_data)
 
     # then
     assert result == {
-        'authors': ['Author1', 'Author2'],
-        'dimensions': '8.5 x 11.0 x 1.5',
-        'isbn': '333-3333333333',
-        'id': '103',
-        'title': 'Book 103 Title'
+        "authors": ["Author1", "Author2"],
+        "dimensions": "8.5 x 11.0 x 1.5",
+        "isbn": "333-3333333333",
+        "id": "103",
+        "title": "Book 103 Title",
     }
-
-
-

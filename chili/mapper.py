@@ -15,7 +15,13 @@ class Mapper:
     def map(self, data: Dict[str, Any], skip_keys: bool = False, default_value: Any = None) -> Dict[str, Any]:
         return self._map(data, self.scheme, skip_keys, default_value)
 
-    def _map(self, data: Dict, scheme: MappingScheme, skip_keys: bool, default_value: Any = None) -> Any:
+    def _map(
+        self,
+        data: Dict,
+        scheme: MappingScheme,
+        skip_keys: bool,
+        default_value: Any = None,
+    ) -> Any:
         result = {}
         evaluated_keys = set()
         for new_key, old_key in scheme.items():

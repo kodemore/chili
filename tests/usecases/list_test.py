@@ -24,4 +24,3 @@ def test_can_encode_typed_list_of_dataclasses() -> None:
 
     # then
     assert values == [{"age": 1, "name": "Bob"}, {"age": 2, "name": "Alice"}]
-

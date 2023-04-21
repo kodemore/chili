@@ -16,13 +16,21 @@ def test_can_encode_typed_dict() -> None:
         author: Author
         no_pages: int
 
-    book = Book(name="The Hobbit", author=Author(first_name="J.R.R.", last_name="Tolkien"), no_pages=295)
+    book = Book(
+        name="The Hobbit",
+        author=Author(first_name="J.R.R.", last_name="Tolkien"),
+        no_pages=295,
+    )
 
     # when
     result = encode(book, Book)
 
     # then
-    assert result == {"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "no_pages": 295}
+    assert result == {
+        "name": "The Hobbit",
+        "author": {"first_name": "J.R.R.", "last_name": "Tolkien"},
+        "no_pages": 295,
+    }
 
 
 def test_can_decode_typed_dict() -> None:
@@ -37,7 +45,11 @@ def test_can_decode_typed_dict() -> None:
         author: Author
         no_pages: int
 
-    raw_book = {"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "no_pages": "295"}
+    raw_book = {
+        "name": "The Hobbit",
+        "author": {"first_name": "J.R.R.", "last_name": "Tolkien"},
+        "no_pages": "295",
+    }
 
     # when
     result = decode(raw_book, Book)

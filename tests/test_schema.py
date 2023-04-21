@@ -13,10 +13,8 @@ def test_can_create_schema() -> None:
     schema = create_schema(Pet)
 
     # then
-    assert schema == {
-        "name": Property("name", str),
-        "age": Property("age", int)
-    }
+    assert schema == {"name": Property("name", str), "age": Property("age", int)}
+
 
 def test_can_ignore_class_vars() -> None:
     # given
@@ -51,5 +49,5 @@ def test_can_compose_schemas_when_inherited() -> None:
     assert schema == {
         "name": Property("name", str),
         "age": Property("age", int),
-        "race": Property("race", str)
+        "race": Property("race", str),
     }
