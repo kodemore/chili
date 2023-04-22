@@ -376,7 +376,7 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         raise EncoderError.invalid_type(a_type)
 
     type_attributes: List[TypeEncoder] = [
-        build_type_encoder(subtype, module=module) if subtype is not ... else ...  # type: ignore
+        build_type_encoder(subtype, extra_encoders=extra_encoders, module=module) if subtype is not ... else ...  # type: ignore
         for subtype in get_type_args(a_type)
     ]
 
