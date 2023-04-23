@@ -441,7 +441,7 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         raise DecoderError.invalid_type(a_type)
 
     type_attributes: List[Union[TypeDecoder, Any]] = [
-        build_type_decoder(subtype, module=module) if subtype is not ... else ...  # type: ignore
+        build_type_decoder(subtype, extra_decoders=extra_decoders, module=module) if subtype is not ... else ...  # type: ignore
         for subtype in get_type_args(a_type)
     ]
     if len(type_attributes) == 1:
