@@ -201,6 +201,13 @@ def create_schema(cls: Type) -> TypeSchema:
         # ignore class vars as they are not object properties
         if p_origin and p_origin is ClassVar:
             continue
+        
+        # ignore init-only variables as they go out of scope when object is encoded (serialized)
+        if type(p_type) is InitVar:
+            if not name in attributes:
+                # not optional init-only variables make decoding (deserialization) impossible as they do not persist in encoding (serialization)
+                warnings.warn(f"Dataclass field '{name}' is InitVar without default value. Decoding is impossible!")
+            continue
 
         if name in attributes:
             prop_value = attributes[name]
