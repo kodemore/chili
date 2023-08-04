@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import typing
+import warnings
 from dataclasses import Field, is_dataclass, MISSING
 from enum import Enum
 from inspect import isclass as is_class
