@@ -311,7 +311,12 @@ _supported_generics = {
 
 
 @lru_cache(maxsize=None)
-def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module: Any = None) -> TypeEncoder:
+def build_type_encoder(
+    a_type: Type,
+    extra_encoders: TypeEncoders = None,
+    module: Any = None,
+    get_encoders: Callable[[object], Dict] = None,
+) -> TypeEncoder:
     if extra_encoders and a_type in extra_encoders:
         return extra_encoders[a_type]
 
@@ -323,12 +328,22 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
     if origin_type is None and is_dataclass(a_type):
         if issubclass(a_type, Generic):  # type: ignore
             raise EncoderError.invalid_type
-        return ClassEncoder(a_type, extra_encoders)
+        try:
+            # Try to use encoders (if any) of nested dataclass
+            return ClassEncoder(a_type, TypeEncoders(get_encoders(a_type)))
+        except AttributeError:
+            # Otherwise use encoders defined on Encoder initialization
+            return ClassEncoder(a_type, extra_encoders)
 
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore
             return GenericClassEncoder(a_type)
-        return ClassEncoder(a_type, extra_encoders)
+        try:
+            # Try to use encoders (if any) of nested dataclass
+            return ClassEncoder(a_type, TypeEncoders(get_encoders(a_type)))
+        except AttributeError:
+            # Otherwise use encoders defined on Encoder initialization
+            return ClassEncoder(a_type, extra_encoders)
 
     if origin_type is None:
         origin_type = a_type
@@ -390,10 +405,14 @@ class Encoder(Generic[T]):
     __generic__: Type[T]
     _encoders: Dict[str, TypeEncoder]
 
-    def __init__(self, encoders: Union[Dict, TypeEncoders] = None):
+    def __init__(self, encoders: Union[Dict, TypeEncoders] = None, get_encoders: Callable[[Type], Dict] = None):
         if encoders and not isinstance(encoders, TypeEncoders):
             encoders = TypeEncoders(encoders)
-
+        elif get_encoders:
+            # Get encoders via function call
+            encoders = TypeEncoders(get_encoders(self.__class__.__generic__))
+            self.get_encoders = get_encoders
+        
         self.type_encoders = encoders
 
     def encode(self, obj: T) -> StateObject:
@@ -417,7 +436,7 @@ class Encoder(Generic[T]):
         schema: TypeSchema = self.schema
 
         return {
-            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders)  # type: ignore
+            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders, get_encoders=self.get_encoders)  # type: ignore
             for prop in schema.values()
         }
 
