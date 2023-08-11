@@ -1,9 +1,9 @@
-from typing import TypeVar, Generic, List
+from typing import Generic, List, TypeVar
+
+import pytest
 
 from chili import encodable, encode
 from chili.error import EncoderError
-
-import pytest
 
 
 def test_encode_generic_type() -> None:
@@ -37,13 +37,9 @@ def test_encode_generic_type() -> None:
             self.count = count
             self.items = items
 
-    array_of_books = Array[Book](
-        count=2, items=[Book("Book 1", 100), Book("Book 2", 200)]
-    )
+    array_of_books = Array[Book](count=2, items=[Book("Book 1", 100), Book("Book 2", 200)])
 
-    array_of_authors = Array[Author](
-        count=2, items=[Author("John", "Doe"), Author("Jane", "Doe")]
-    )
+    array_of_authors = Array[Author](count=2, items=[Author("John", "Doe"), Author("Jane", "Doe")])
 
     # when
     books = encode(array_of_books, Array[Book])
@@ -85,9 +81,7 @@ def test_fail_encode_non_parametrized_generic() -> None:
             self.count = count
             self.items = items
 
-    array_of_books = Array[Book](
-        count=2, items=[Book("Book 1", 100), Book("Book 2", 200)]
-    )
+    array_of_books = Array[Book](count=2, items=[Book("Book 1", 100), Book("Book 2", 200)])
 
     # when
     with pytest.raises(EncoderError):
@@ -115,9 +109,7 @@ def test_fail_encode_generic_with_non_encondable_type() -> None:
             self.count = count
             self.items = items
 
-    array_of_books = Array[Book](
-        count=2, items=[Book("Book 1", 100), Book("Book 2", 200)]
-    )
+    array_of_books = Array[Book](count=2, items=[Book("Book 1", 100), Book("Book 2", 200)])
 
     # when
     with pytest.raises(EncoderError):

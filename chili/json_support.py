@@ -1,8 +1,8 @@
 from json import dumps, loads
-from typing import Any, Type, TypeVar, Union, Generic
+from typing import Any, Generic, Type, TypeVar, Union
 
-from .decoder import decode, TypeDecoders, Decoder
-from .encoder import encode, TypeEncoders, Encoder
+from .decoder import Decoder, TypeDecoders, decode
+from .encoder import Encoder, TypeEncoders, encode
 from .serializer import Serializer
 
 T = TypeVar("T")

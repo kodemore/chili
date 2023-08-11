@@ -2,7 +2,7 @@ import datetime
 import enum
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import List, Generic, TypeVar, Optional, TypedDict, Set, Tuple
+from typing import Generic, List, Optional, Set, Tuple, TypedDict, TypeVar
 
 import pytest
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from chili import decodable, Decoder
+from chili import Decoder, decodable
 
 
 def test_decodable_with_default_values() -> None:

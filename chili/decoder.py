@@ -10,49 +10,45 @@ from enum import Enum
 from functools import lru_cache
 from inspect import isclass
 from typing import (
-    Generic,
-    Type,
     Any,
-    Dict,
-    TypeVar,
-    Protocol,
-    List,
-    Union,
     Callable,
+    Dict,
+    Generic,
+    List,
+    Protocol,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
     final,
     get_origin,
-    Tuple,
-    Sequence,
 )
 
 from chili.typing import (
-    create_schema,
-    _PROPERTIES,
     _DECODABLE,
+    _PROPERTIES,
+    UNDEFINED,
     TypeSchema,
-    is_dataclass,
+    create_schema,
     get_origin_type,
-    resolve_forward_reference,
+    get_parameters_map,
+    get_type_args,
+    is_class,
+    is_dataclass,
+    is_decodable,
     is_enum_type,
     is_named_tuple,
-    is_typed_dict,
-    get_parameters_map,
-    map_generic_type,
-    is_optional,
-    get_type_args,
-    unpack_optional,
-    is_decodable,
-    UNDEFINED,
-    is_class,
     is_newtype,
+    is_optional,
+    is_typed_dict,
+    map_generic_type,
+    resolve_forward_reference,
+    unpack_optional,
 )
+
 from .error import DecoderError
-from .iso_datetime import (
-    parse_iso_datetime,
-    parse_iso_duration,
-    parse_iso_date,
-    parse_iso_time,
-)
+from .iso_datetime import parse_iso_date, parse_iso_datetime, parse_iso_duration, parse_iso_time
 from .state import StateObject
 
 C = TypeVar("C")
@@ -229,14 +225,14 @@ class UnionDecoder(TypeDecoder):
             for castable, decoder in self._type_decoders.items():
                 try:
                     return castable(value)
-                except:
+                except Exception:
                     continue
 
         if passed_type is str:
             for transformable, decoder in self._type_decoders.items():
                 try:
                     return decoder.decode(value)
-                except:
+                except Exception:
                     continue
 
         if passed_type is dict:
@@ -247,7 +243,7 @@ class UnionDecoder(TypeDecoder):
                         return decoder.decode(value)
                     if is_decodable(decodable) and value_keys == getattr(decodable, _PROPERTIES, {}).keys():
                         return decoder.decode(value)
-                except:
+                except Exception:
                     continue
 
         raise DecoderError.invalid_input(value)
@@ -411,11 +407,10 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
 
     if origin_type is Union:
         type_args = get_type_args(a_type)
-        if len(type_args) == 2 and type_args[-1] is type(None):
+        if len(type_args) == 2 and type_args[-1] is type(None):  # type: ignore
             return OptionalTypeDecoder(
-                build_type_decoder(
-                    a_type=type_args[0],
-                    extra_decoders=extra_decoders))  # type: ignore
+                build_type_decoder(a_type=type_args[0], extra_decoders=extra_decoders)  # type: ignore
+            )
         return UnionDecoder(type_args)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
@@ -444,7 +439,9 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         raise DecoderError.invalid_type(a_type)
 
     type_attributes: List[Union[TypeDecoder, Any]] = [
-        build_type_decoder(subtype, extra_decoders=extra_decoders, module=module) if subtype is not ... else ...  # type: ignore
+        build_type_decoder(subtype, extra_decoders=extra_decoders, module=module)  # type: ignore
+        if subtype is not ...
+        else ...
         for subtype in get_type_args(a_type)
     ]
     if len(type_attributes) == 1:

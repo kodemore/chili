@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from typing import List
+
 import pytest
 
-from chili import serializable, decode
+from chili import decode, serializable
 from chili.error import SerialisationError
 
 

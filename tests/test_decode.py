@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, TypeVar, Generic, Union
+from typing import Generic, List, Optional, TypeVar, Union
 
 import pytest
 
-from chili import decode, decodable
+from chili import decodable, decode
 
 
 def test_can_decode_dataclass() -> None:

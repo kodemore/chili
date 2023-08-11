@@ -1,11 +1,4 @@
-from chili import (
-    decodable,
-    JsonDecoder,
-    JsonEncoder,
-    JsonSerializer,
-    encodable,
-    serializable,
-)
+from chili import JsonDecoder, JsonEncoder, JsonSerializer, decodable, encodable, serializable
 
 
 def test_can_instantiate_json_decoder() -> None:
@@ -49,7 +42,9 @@ def test_can_json_decode() -> None:
         author: Author
         isbn: str
 
-    book_json = '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+    book_json = (
+        '{"name": "The Hobbit", "author": {"first_name": "J.R.R.", "last_name": "Tolkien"}, "isbn": "1234567890"}'
+    )
     decoder = JsonDecoder[Book]()
 
     # when

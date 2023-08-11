@@ -1,6 +1,6 @@
 from typing import List
 
-from chili import encodable, Encoder
+from chili import Encoder, encodable
 
 
 def test_can_encode_encodable_with_undefined_field() -> None:

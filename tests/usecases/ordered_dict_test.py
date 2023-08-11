@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from chili import encode, decode
+from chili import decode, encode
 
 
 def test_can_encode_ordered_dict() -> None:

@@ -441,24 +441,24 @@ Complex types are handled by corresponding Encoder and Decoder classes.
 
 Passed value is automatically cast to either `collections.namedtuple` during decoding process or `list` during encoding process.
 
-> Please refer to [chili.encoder.NamedTupleEncoder](chili/encoder.py#L226) and [chili.decoder.NamedTupleDecoder](chili/decoder.py#L307) for more details.
 
 #### `collections.deque`
 
 Passed value is automatically cast to either `collections.deque` during decoding process or `list` during encoding process.
 
-> Please refer to [chili.encoder.DequeEncoder](chili/encoder.py#L187) and [chili.decoder.DequeDecoder](chili/decoder.py#L268) for more details.
 
 #### `collections.OrderedDict`
 
 Passed value is automatically cast to either `collections.OrderedDict` during decoding process or `list` where each item is a `list` of two elements corresponding to `key` and `value`, during encoding process.
 
+
 #### `datetime.date`
 
-Passed value must be valid ISO-8601 date string, then it is automatically hydrated to an instance of `datetime.date` 
-class and extracted to ISO-8601 format compatible string.
+Passed value is automatically cast to either `datetime.date` during decoding process or `str` (valid ISO-8601 date string) during encoding process.
 
 #### `datetime.datetime`
+
+
 
 Passed value must be valid ISO-8601 date time string, then it is automatically hydrated to an instance of `datetime.datetime` 
 class and extracted to ISO-8601 format compatible string.

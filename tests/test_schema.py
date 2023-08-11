@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from chili.typing import create_schema, Property, _PROPERTIES
+from chili.typing import _PROPERTIES, Property, create_schema
 
 
 def test_can_create_schema() -> None:

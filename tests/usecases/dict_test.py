@@ -1,6 +1,6 @@
 from typing import Dict, Union
 
-from chili import encode, decode
+from chili import decode, encode
 
 
 def test_encode_dict() -> None:

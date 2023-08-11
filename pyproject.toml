@@ -1,23 +1,23 @@
 [tool.poetry]
 authors = [
-    "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
+  "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "Natural Language :: English",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Software Development :: Code Generators",
-    "Topic :: Utilities",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
+  "Topic :: Software Development :: Code Generators",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Utilities"
 ]
 description = "Chili is serialisation library. It can serialise/deserialise almost any object."
 documentation = "https://github.com/kodemore/chili"
 homepage = "https://github.com/kodemore/chili"
-keywords = ["serialise", "deserialise", "encode", "decode", "object", "class"]
+keywords = ["class", "decode", "deserialise", "encode", "object", "serialise"]
 license = "MIT"
 name = "chili"
 readme = "README.md"
@@ -25,17 +25,59 @@ repository = "https://github.com/kodemore/chili"
 version = "2.1.0"
 
 [tool.poetry.dependencies]
+gaffe = "0.2.0"
 python = "^3.8"
 typing-extensions = "^4.2"
-gaffe = "0.2.0"
 
 [tool.poetry.dev-dependencies]
 black = "22.3"
-flake8 = "^5.0.4"
 isort = "^5.6.4"
 mypy = "^0.961"
 pylint = "^2.7.2"
 pytest = "^7.1"
 pytest-cov = "^3.0"
 pytest-mock = "^3.7"
+ruff = "^0.0.284"
 toml-sort = "^0.20.1"
+
+[tool.poetry.group.dev.dependencies]
+toml-sort = "^0.23.1"
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv"
+]
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["A", "ANN", "ARG", "B", "BLE", "C", "COM", "D", "DJ", "DTZ", "E", "EM", "ERA", "EXE", "F", "FBT", "G", "I", "ICN", "INP", "ISC", "N", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "Q", "RET", "RSE", "RUF", "S", "SIM", "SLF", "T", "TCH", "TID", "TRY", "UP", "W", "YTT"]
+ignore = []
+# Same as Black.
+line-length = 120
+# Enable pycodestyle (`E`) codes by default.
+select = ["E"]
+# Assume Python 3.9
+target-version = "py39"
+unfixable = []
+
+[tool.ruff.mccabe]
+max-complexity = 8

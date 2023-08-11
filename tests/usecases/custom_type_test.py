@@ -1,5 +1,5 @@
-from chili import TypeEncoder, encode, encodable, Encoder, TypeDecoder, decode
-from chili.decoder import TypeDecoders, decodable, Decoder
+from chili import Encoder, TypeDecoder, TypeEncoder, decode, encodable, encode
+from chili.decoder import Decoder, TypeDecoders, decodable
 from chili.encoder import TypeEncoders
 
 

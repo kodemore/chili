@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import NamedTuple
 
-from chili import encode, decode
+from chili import decode, encode
 
 
 def test_can_encode_namedtuple() -> None:

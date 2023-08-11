@@ -1,10 +1,9 @@
 from dataclasses import dataclass, field
-from typing import List, Generic, TypeVar
+from typing import Generic, List, TypeVar
 
 import pytest
 
-from chili import Decoder
-from chili import Encoder
+from chili import Decoder, Encoder
 from chili.decoder import ClassDecoder, decode
 from chili.error import DecoderError
 
@@ -66,9 +65,7 @@ def test_can_encode_nested_dataclasses() -> None:
         author: Author
         tags: List[Tag]
 
-    book = Book(
-        "The Hobbit", Author("J.R.R.", "Tolkien"), [Tag("Fantasy"), Tag("Adventure")]
-    )
+    book = Book("The Hobbit", Author("J.R.R.", "Tolkien"), [Tag("Fantasy"), Tag("Adventure")])
 
     encoder = Encoder[Book]()
 

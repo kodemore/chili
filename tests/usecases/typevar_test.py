@@ -3,7 +3,7 @@ from typing import TypeVar
 
 import pytest
 
-from chili import Encoder, Decoder
+from chili import Decoder, Encoder
 
 
 def test_can_encode_bound_typevar() -> None:

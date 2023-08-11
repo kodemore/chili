@@ -9,40 +9,29 @@ from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from typing import (
-    Generic,
-    Type,
-    Any,
-    Dict,
-    TypeVar,
-    Protocol,
-    List,
-    Union,
-    Callable,
-    final,
-    Tuple,
-)
+from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, TypeVar, Union, final
 
 from chili.typing import (
-    create_schema,
-    _PROPERTIES,
     _ENCODABLE,
+    _PROPERTIES,
+    UNDEFINED,
     TypeSchema,
-    is_dataclass,
+    create_schema,
     get_origin_type,
-    resolve_forward_reference,
+    get_parameters_map,
+    get_type_args,
+    is_class,
+    is_dataclass,
     is_enum_type,
     is_named_tuple,
-    is_typed_dict,
-    get_parameters_map,
-    map_generic_type,
-    is_optional,
-    get_type_args,
-    unpack_optional,
     is_newtype,
-    UNDEFINED,
-    is_class,
+    is_optional,
+    is_typed_dict,
+    map_generic_type,
+    resolve_forward_reference,
+    unpack_optional,
 )
+
 from .error import EncoderError
 from .iso_datetime import timedelta_to_iso_duration
 from .state import StateObject
@@ -376,7 +365,9 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         raise EncoderError.invalid_type(a_type)
 
     type_attributes: List[TypeEncoder] = [
-        build_type_encoder(subtype, extra_encoders=extra_encoders, module=module) if subtype is not ... else ...  # type: ignore
+        build_type_encoder(subtype, extra_encoders=extra_encoders, module=module)  # type: ignore
+        if subtype is not ...
+        else ...  # noqa: E501
         for subtype in get_type_args(a_type)
     ]
 

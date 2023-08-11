@@ -2,7 +2,7 @@ sources = chili tests
 .DEFAULT_GOAL := all
 
 toml_sort:
-	toml-sort pyproject.toml --all --in-place
+	poetry run toml-sort pyproject.toml --all --in-place
 
 isort:
 	poetry run isort $(sources)
@@ -10,8 +10,8 @@ isort:
 black:
 	poetry run black --line-length=120 --target-version py38 $(sources)
 
-flake:
-	poetry run flake8 chili
+ruff:
+	poetry run ruff chili
 
 pylint:
 	poetry run pylint chili
@@ -25,7 +25,7 @@ bandit:
 test:
 	poetry run pytest tests
 
-lint: isort black flake mypy toml_sort
+lint: isort black ruff mypy toml_sort
 
 tests: test
 
