@@ -412,7 +412,10 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
     if origin_type is Union:
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
-            return OptionalTypeDecoder(build_type_decoder(type_args[0]))  # type: ignore
+            return OptionalTypeDecoder(
+                build_type_decoder(
+                    a_type=type_args[0],
+                    extra_decoders=extra_decoders))  # type: ignore
         return UnionDecoder(type_args)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
