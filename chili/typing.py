@@ -6,7 +6,7 @@ import warnings
 from dataclasses import Field, is_dataclass, MISSING
 from enum import Enum
 from inspect import isclass as is_class
-from typing import Any, Dict, List, Optional, Type, Union, ClassVar, NewType, Callable
+from typing import Any, Dict, List, Optional, Type, Union, ClassVar, NewType, Callable, InitVar
 
 from chili.error import SerialisationError
 
