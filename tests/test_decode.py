@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, List, Optional, TypeVar, Union, Pattern
+from typing import Generic, List, Optional, Pattern, TypeVar, Union
 
 import pytest
 
@@ -188,6 +188,7 @@ def test_decode_regex_from_str() -> None:
 
     # then
     assert isinstance(result, Pattern)
+
 
 def test_decode_regex_with_flags_from_str() -> None:
     # given

@@ -10,13 +10,14 @@ from base64 import b64decode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from pathlib import PurePath, PureWindowsPath, PurePosixPath, Path, PosixPath, WindowsPath
+from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
 from typing import (
     Any,
     Callable,
     Dict,
     Generic,
     List,
+    Pattern,
     Protocol,
     Sequence,
     Tuple,
@@ -25,7 +26,6 @@ from typing import (
     Union,
     final,
     get_origin,
-    Pattern,
 )
 
 from chili.typing import (
@@ -82,6 +82,7 @@ _REGEX_FLAGS = {
     "x": re.X,
 }
 
+
 def decode_regex_from_string(value: str) -> Pattern:
     """
     Decodes regex from string containing flags /ims.
@@ -91,7 +92,7 @@ def decode_regex_from_string(value: str) -> Pattern:
             return re.compile(value[1:-1])
         elif value[-2] == "/":
             pattern = value[1:-2]
-            flags = [value[-1]]
+            flags = value[-1]
         elif value[-3] == "/":
             pattern = value[1:-3]
             flags = value[-2:]

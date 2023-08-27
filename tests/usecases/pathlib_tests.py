@@ -1,6 +1,6 @@
-from pathlib import PurePosixPath, PureWindowsPath, PurePath, PosixPath, Path
+from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath
 
-from chili import encode, decode
+from chili import decode, encode
 
 
 def test_can_encode_pure_posix_path() -> None:
@@ -46,6 +46,7 @@ def test_can_decode_pure_windows_path() -> None:
     # then
     assert isinstance(result, PureWindowsPath)
 
+
 def test_can_decode_pure_path() -> None:
     # given
     path = "/home/user"
@@ -66,6 +67,7 @@ def test_can_encode_pure_path() -> None:
 
     # then
     assert result == "/home/user"
+
 
 def test_can_decode_posix_path() -> None:
     # given
@@ -98,6 +100,7 @@ def test_can_decode_path() -> None:
 
     # then
     assert isinstance(result, Path)
+
 
 def test_can_encode_path() -> None:
     # given

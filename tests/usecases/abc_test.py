@@ -1,7 +1,7 @@
 from abc import ABC
 
-from chili.decoder import decode, decodable
-from chili.encoder import encode, encodable
+from chili.decoder import decodable, decode
+from chili.encoder import encodable, encode
 
 
 def test_can_encode_class_generalizing_abc() -> None:
@@ -30,7 +30,6 @@ def test_can_encode_class_generalizing_abc() -> None:
         "name": "Bob",
         "age": 4,
     }
-
 
 
 def test_can_decode_class_generalizing_abc() -> None:

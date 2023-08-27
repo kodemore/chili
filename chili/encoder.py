@@ -10,8 +10,8 @@ from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from pathlib import PurePath, PureWindowsPath, PurePosixPath, Path, PosixPath, WindowsPath
-from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, TypeVar, Union, final, Pattern
+from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
+from typing import Any, Callable, Dict, Generic, List, Pattern, Protocol, Tuple, Type, TypeVar, Union, final
 
 from chili.typing import (
     _ENCODABLE,
@@ -57,6 +57,7 @@ class ProxyEncoder(TypeEncoder, Generic[T]):
 
     def encode(self, value: Any) -> T:
         return self._encoder(value)
+
 
 def encode_regex_to_string(value: Pattern) -> str:
     """
@@ -136,14 +137,14 @@ _builtin_type_encoders = TypeEncoders(
         datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
-        PurePath: ProxyEncoder[PurePath](str),
-        PureWindowsPath: ProxyEncoder[PureWindowsPath](str),
-        PurePosixPath: ProxyEncoder[PurePosixPath](str),
-        Path: ProxyEncoder[Path](str),
-        PosixPath: ProxyEncoder[PosixPath](str),
-        WindowsPath: ProxyEncoder[WindowsPath](str),
-        Pattern: ProxyEncoder[Pattern](encode_regex_to_string),
-        re.Pattern: ProxyEncoder[re.Pattern](encode_regex_to_string),
+        PurePath: ProxyEncoder[str](str),
+        PureWindowsPath: ProxyEncoder[str](str),
+        PurePosixPath: ProxyEncoder[str](str),
+        Path: ProxyEncoder[str](str),
+        PosixPath: ProxyEncoder[str](str),
+        WindowsPath: ProxyEncoder[str](str),
+        Pattern: ProxyEncoder[str](encode_regex_to_string),
+        re.Pattern: ProxyEncoder[str](encode_regex_to_string),
     }
 )
 
@@ -392,7 +393,6 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
 
     if origin_type not in _supported_generics:
         raise EncoderError.invalid_type(a_type)
-
 
     type_attributes: List[TypeEncoder] = [
         build_type_encoder(subtype, extra_encoders=extra_encoders, module=module)  # type: ignore

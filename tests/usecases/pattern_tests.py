@@ -1,7 +1,7 @@
 import re
 from typing import Pattern
 
-from chili import encode, decode
+from chili import decode, encode
 
 
 def test_can_encode_pattern() -> None:
@@ -17,7 +17,7 @@ def test_can_encode_pattern() -> None:
 
 def test_can_encode_pattern_with_flags() -> None:
     # given
-    pattern = re.compile("[a-z0-9]+", flags=re.I|re.M|re.S|re.X)
+    pattern = re.compile("[a-z0-9]+", flags=re.I | re.M | re.S | re.X)
 
     # when
     result = encode(pattern)
