@@ -10,6 +10,7 @@ from base64 import b64decode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
+from ipaddress import IPv4Address, IPv6Address
 from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
 from typing import (
     Any,
@@ -27,6 +28,7 @@ from typing import (
     final,
     get_origin,
 )
+from uuid import UUID
 
 from chili.typing import (
     _DECODABLE,
@@ -176,6 +178,9 @@ _builtin_type_decoders = TypeDecoders(
         WindowsPath: ProxyDecoder[WindowsPath](WindowsPath),
         Pattern: ProxyDecoder[Pattern](decode_regex_from_string),
         re.Pattern: ProxyDecoder[re.Pattern](decode_regex_from_string),
+        IPv4Address: ProxyDecoder[IPv4Address](IPv4Address),
+        IPv6Address: ProxyDecoder[IPv6Address](IPv6Address),
+        UUID: ProxyDecoder[UUID](UUID),
     }
 )
 

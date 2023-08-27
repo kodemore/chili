@@ -10,8 +10,10 @@ from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
+from ipaddress import IPv4Address, IPv6Address
 from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
 from typing import Any, Callable, Dict, Generic, List, Pattern, Protocol, Tuple, Type, TypeVar, Union, final
+from uuid import UUID
 
 from chili.typing import (
     _ENCODABLE,
@@ -145,6 +147,9 @@ _builtin_type_encoders = TypeEncoders(
         WindowsPath: ProxyEncoder[str](str),
         Pattern: ProxyEncoder[str](encode_regex_to_string),
         re.Pattern: ProxyEncoder[str](encode_regex_to_string),
+        IPv6Address: ProxyEncoder[str](str),
+        IPv4Address: ProxyEncoder[str](str),
+        UUID: ProxyEncoder[str](str),
     }
 )
 
