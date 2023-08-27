@@ -384,7 +384,7 @@ decoded = decoder.decode(invalid_data)  # Raises DecoderError.invalid_input
 
 ## Supported types
 
-The following section lists all the data types supported by the library and explains how they are decoded and encoded. The supported data types include built-in Python types like `bool`, `dict`, `float`, `int`, `list`, `set`, `str`, and `tuple`, as well as more complex types like `collections.namedtuple`, `collections.deque`, `collections.OrderedDict`, `datetime.date`, `datetime.datetime`, `datetime.time`, `datetime.timedelta`, `decimal.Decimal`, `enum.Enum`, `enum.IntEnum`, and various types defined in the typing module.
+The following section lists all the data types supported by the library and explains how they are decoded and encoded. The supported data types include built-in Python types like `bool`, `dict`, `float`, `int`, `list`, `set`, `str`, and `tuple`, as well as more complex types like `collections.namedtuple`, `collections.deque`, `collections.OrderedDict`, `datetime.date`, `datetime.datetime`, `datetime.time`, `datetime.timedelta`, `decimal.Decimal`, `enum.Enum`, `enum.IntEnum`, `pathlib.Path`, and various types defined in the typing module.
 
 ### Simple types
 
@@ -489,6 +489,10 @@ extracted to value of the enum member.
 
 Same as `enum.Enum`.
 
+
+#### `pathlib.Path`
+Supported hydration for all instances of `pathlib.Path` class, during extraction value is extracted to string.
+
 ### Typing module support
 
 #### `typing.Any`
@@ -551,7 +555,6 @@ if your type is `typing.Optional[int]` `None` value is not hydrated to `int`.
 
 Limited support for Unions.
 
+#### `typing.Pattern`
 
-
-
-
+Passed value must be a valid regex pattern, if contains flags regex should start with `/` and flags should be passed after `/` only `ismx` flags are supported.

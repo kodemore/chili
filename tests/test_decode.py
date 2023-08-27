@@ -1,10 +1,12 @@
+import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, List, Optional, TypeVar, Union
+from typing import Generic, List, Optional, Pattern, TypeVar, Union
 
 import pytest
 
 from chili import decodable, decode
+from chili.decoder import decode_regex_from_string
 
 
 def test_can_decode_dataclass() -> None:
@@ -175,3 +177,30 @@ def test_fail_decode_int_enum() -> None:
     # when
     with pytest.raises(ValueError):
         decode(data, PetType)
+
+
+def test_decode_regex_from_str() -> None:
+    # given
+    value = r"\d+"
+
+    # when
+    result = decode_regex_from_string(value)
+
+    # then
+    assert isinstance(result, Pattern)
+
+
+def test_decode_regex_with_flags_from_str() -> None:
+    # given
+    value = r"/\d+/ismx"
+
+    # when
+    result = decode_regex_from_string(value)
+
+    # then
+    assert isinstance(result, Pattern)
+    assert result.pattern == "\d+"
+    assert result.flags & re.I
+    assert result.flags & re.M
+    assert result.flags & re.S
+    assert result.flags & re.X

@@ -3,13 +3,17 @@ from __future__ import annotations
 import collections
 import datetime
 import decimal
+import re
 import typing
 from abc import abstractmethod
 from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, TypeVar, Union, final
+from ipaddress import IPv4Address, IPv6Address
+from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
+from typing import Any, Callable, Dict, Generic, List, Pattern, Protocol, Tuple, Type, TypeVar, Union, final
+from uuid import UUID
 
 from chili.typing import (
     _ENCODABLE,
@@ -55,6 +59,26 @@ class ProxyEncoder(TypeEncoder, Generic[T]):
 
     def encode(self, value: Any) -> T:
         return self._encoder(value)
+
+
+def encode_regex_to_string(value: Pattern) -> str:
+    """
+    Encodes regex into string and preserves flags if they are set. Then regex is normally wrapped between slashes.
+    """
+    flags = []
+    if re.I & value.flags:
+        flags.append("i")
+    if re.M & value.flags:
+        flags.append("m")
+    if re.S & value.flags:
+        flags.append("s")
+    if re.X & value.flags:
+        flags.append("x")
+
+    if flags:
+        return f"/{value.pattern}/{''.join(flags)}"
+
+    return value.pattern
 
 
 def encodable(_cls=None) -> Any:
@@ -115,6 +139,17 @@ _builtin_type_encoders = TypeEncoders(
         datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
+        PurePath: ProxyEncoder[str](str),
+        PureWindowsPath: ProxyEncoder[str](str),
+        PurePosixPath: ProxyEncoder[str](str),
+        Path: ProxyEncoder[str](str),
+        PosixPath: ProxyEncoder[str](str),
+        WindowsPath: ProxyEncoder[str](str),
+        Pattern: ProxyEncoder[str](encode_regex_to_string),
+        re.Pattern: ProxyEncoder[str](encode_regex_to_string),
+        IPv6Address: ProxyEncoder[str](str),
+        IPv4Address: ProxyEncoder[str](str),
+        UUID: ProxyEncoder[str](str),
     }
 )
 
