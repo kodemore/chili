@@ -3,13 +3,15 @@ from __future__ import annotations
 import collections
 import datetime
 import decimal
+import re
 import typing
 from abc import abstractmethod
 from base64 import b64encode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
-from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, TypeVar, Union, final
+from pathlib import PurePath, PureWindowsPath, PurePosixPath, Path, PosixPath, WindowsPath
+from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, TypeVar, Union, final, Pattern
 
 from chili.typing import (
     _ENCODABLE,
@@ -55,6 +57,25 @@ class ProxyEncoder(TypeEncoder, Generic[T]):
 
     def encode(self, value: Any) -> T:
         return self._encoder(value)
+
+def encode_regex_to_string(value: Pattern) -> str:
+    """
+    Encodes regex into string and preserves flags if they are set. Then regex is normally wrapped between slashes.
+    """
+    flags = []
+    if re.I & value.flags:
+        flags.append("i")
+    if re.M & value.flags:
+        flags.append("m")
+    if re.S & value.flags:
+        flags.append("s")
+    if re.X & value.flags:
+        flags.append("x")
+
+    if flags:
+        return f"/{value.pattern}/{''.join(flags)}"
+
+    return value.pattern
 
 
 def encodable(_cls=None) -> Any:
@@ -115,6 +136,14 @@ _builtin_type_encoders = TypeEncoders(
         datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
         datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
+        PurePath: ProxyEncoder[PurePath](str),
+        PureWindowsPath: ProxyEncoder[PureWindowsPath](str),
+        PurePosixPath: ProxyEncoder[PurePosixPath](str),
+        Path: ProxyEncoder[Path](str),
+        PosixPath: ProxyEncoder[PosixPath](str),
+        WindowsPath: ProxyEncoder[WindowsPath](str),
+        Pattern: ProxyEncoder[Pattern](encode_regex_to_string),
+        re.Pattern: ProxyEncoder[re.Pattern](encode_regex_to_string),
     }
 )
 
@@ -363,6 +392,7 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
 
     if origin_type not in _supported_generics:
         raise EncoderError.invalid_type(a_type)
+
 
     type_attributes: List[TypeEncoder] = [
         build_type_encoder(subtype, extra_encoders=extra_encoders, module=module)  # type: ignore
