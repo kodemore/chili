@@ -85,6 +85,60 @@ decoded = decoder.decode(data)
 assert isinstance(decoded, Pet)
 ```
 
+## Decoding/encoding though initializer
+
+In normal mode encoding and decoding is done by inspecting class properties, but if you want to use initializer instead, you can use `@encodable` and `@decodable`, and `@serializable` with `use_init` flag set to `True`. This will cause the library to use initializer instead of class properties.
+
+Please see the example below:
+
+```python
+from chili import encodable, Encoder, Decoder
+
+@encodable(use_init=True)
+class Pet:
+    def __init__(self, name: str, age: int, breed: str):
+        self.name = name
+        self.age = age
+        self.breed = breed
+
+encoder = Encoder[Pet]()
+decoder = Decoder[Pet]()
+
+pet = Pet("Max", 3, "Golden Retriever")
+
+encoded = encoder.encode(pet)
+decoded = decoder.decode(encoded)
+
+assert encoded == {"name": "Max", "age": 3, "breed": "Golden Retriever"}
+assert isinstance(decoded, Pet)
+```
+
+There are few caveats to this feature:
+    -you need to define encodable/decodable properties in the initializer by using function arguments with their type annotations
+    - function arguments must be assigned to an object property directly, eg. `self.name = name` instead of `self.name = name or ""` without inline operators
+    - any property that is modified in the initializer will be modified in the decoded object, eg. `self.age += 2` will cause the decoded object to have age increased by 2
+
+```python
+from chili import serializable, Serializer
+
+@serializable(use_init=True)
+class Pet:
+    def __init__(self, name: str, age: int, breed: str):
+        self.name = name
+        self.age = age
+        self.breed = breed
+        self.age += 2
+        
+serializer = Serializer[Pet]()
+pet = Pet("Max", 3, "Golden Retriever")
+
+encoded = serializer.encode(pet)
+decoded = serializer.decode(encoded)
+
+assert encoded["age"] == 5
+assert decoded.age == 7
+```
+
 ## Missing Properties
 If a property is not present in the dictionary when decoding, the `chili.Decoder` class will not fill in the property value, unless there is a default value defined in the type annotation. Similarly, if a property is not defined on the class, the `chili.Encoder` class will hide the property in the resulting dictionary.
 

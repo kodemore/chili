@@ -5,7 +5,16 @@ from typing import Any, Generic, Type, TypeVar
 from chili.decoder import Decoder
 from chili.encoder import Encoder
 from chili.error import SerialisationError
-from chili.typing import _DECODABLE, _ENCODABLE, _PROPERTIES, create_schema, is_class, is_dataclass
+from chili.typing import (
+    _DECODABLE,
+    _ENCODABLE,
+    _PROPERTIES,
+    _USE_INIT,
+    create_schema,
+    create_schema_from_init,
+    is_class,
+    is_dataclass,
+)
 
 C = TypeVar("C")
 T = TypeVar("T")
@@ -38,10 +47,14 @@ class Serializer(Encoder, Decoder, Generic[T]):
         )
 
 
-def serializable(_cls=None) -> Any:
+def serializable(_cls=None, use_init: bool = False) -> Any:
     def _decorate(cls) -> Type[C]:
         if not hasattr(cls, _PROPERTIES):
-            setattr(cls, _PROPERTIES, create_schema(cls))
+            if use_init:
+                setattr(cls, _PROPERTIES, create_schema_from_init(cls))
+                setattr(cls, _USE_INIT, True)
+            else:
+                setattr(cls, _PROPERTIES, create_schema(cls))
 
         setattr(cls, _DECODABLE, True)
         setattr(cls, _ENCODABLE, True)

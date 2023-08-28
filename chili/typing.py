@@ -9,7 +9,7 @@ from enum import Enum
 from inspect import isclass as is_class
 from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union
 
-from chili.error import SerialisationError
+from chili.error import SchemaError, SerialisationError
 
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
@@ -194,6 +194,8 @@ def create_schema_from_init(cls: Type):
             continue
         if not isinstance(node.targets[0], ast.Attribute):
             continue
+        if not isinstance(node.value, ast.Name):
+            continue
 
         if node.value.id in parameters:
             schema[node.value.id] = Property(
@@ -203,6 +205,7 @@ def create_schema_from_init(cls: Type):
             )
 
     return schema
+
 
 def create_schema(cls: Type) -> TypeSchema:
     try:

@@ -14,9 +14,11 @@ from typing import Any, Callable, Dict, Generic, List, Protocol, Tuple, Type, Ty
 from chili.typing import (
     _ENCODABLE,
     _PROPERTIES,
+    _USE_INIT,
     UNDEFINED,
     TypeSchema,
     create_schema,
+    create_schema_from_init,
     get_origin_type,
     get_parameters_map,
     get_type_args,
@@ -29,7 +31,7 @@ from chili.typing import (
     is_typed_dict,
     map_generic_type,
     resolve_forward_reference,
-    unpack_optional, create_schema_from_init, _USE_INIT,
+    unpack_optional,
 )
 
 from .error import EncoderError

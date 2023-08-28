@@ -16,6 +16,10 @@ class EncoderError(SerialisationError):
     encoding_failed = ...
 
 
+class SchemaError(Error):
+    cannot_create_schema: Exception
+
+
 class MapperError(SerialisationError):
     invalid_schema: ValueError
     invalid_value: ValueError
