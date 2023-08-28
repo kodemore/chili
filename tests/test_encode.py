@@ -1,12 +1,14 @@
 import datetime
 import enum
+import re
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Generic, List, Optional, Set, Tuple, TypedDict, TypeVar
+from typing import Generic, List, Optional, Pattern, Set, Tuple, TypedDict, TypeVar
 
 import pytest
 
 from chili import encodable, encode
+from chili.encoder import encode_regex_to_string
 
 
 @pytest.mark.parametrize(
@@ -270,3 +272,27 @@ def test_extract_timedelta() -> None:
 
     # then
     assert result == "P1W3DT2H"
+
+
+def test_can_encode_regex_into_string() -> None:
+    # given
+    pattern_str = "[a-z0-9]+"
+    pattern = re.compile(pattern_str)
+
+    # when
+    result = encode_regex_to_string(pattern)
+
+    # then
+    assert result == pattern_str
+
+
+def test_can_encode_regex_with_flags_into_string() -> None:
+    # given
+    pattern_str = "[a-z0-9]+"
+    pattern = re.compile(pattern_str, flags=re.I | re.M | re.S | re.X)
+
+    # when
+    result = encode_regex_to_string(pattern)
+
+    # then
+    assert result == f"/{pattern_str}/imsx"

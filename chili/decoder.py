@@ -3,18 +3,22 @@ from __future__ import annotations
 import collections
 import datetime
 import decimal
+import re
 import typing
 from abc import abstractmethod
 from base64 import b64decode
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass
+from ipaddress import IPv4Address, IPv6Address
+from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
 from typing import (
     Any,
     Callable,
     Dict,
     Generic,
     List,
+    Pattern,
     Protocol,
     Sequence,
     Tuple,
@@ -24,6 +28,7 @@ from typing import (
     final,
     get_origin,
 )
+from uuid import UUID
 
 from chili.typing import (
     _DECODABLE,
@@ -72,6 +77,41 @@ class ProxyDecoder(Generic[T]):
 
     def decode(self, value: Any) -> T:
         return self._decoder(value)
+
+
+_REGEX_FLAGS = {
+    "i": re.I,
+    "m": re.M,
+    "s": re.S,
+    "x": re.X,
+}
+
+
+def decode_regex_from_string(value: str) -> Pattern:
+    """
+    Decodes regex from string containing flags /ims.
+    """
+    if value.startswith("/"):
+        if value.endswith("/"):
+            return re.compile(value[1:-1])
+        elif value[-2] == "/":
+            pattern = value[1:-2]
+            flags = value[-1]
+        elif value[-3] == "/":
+            pattern = value[1:-3]
+            flags = value[-2:]
+        elif value[-4] == "/":
+            pattern = value[1:-4]
+            flags = value[-3:]
+        elif value[-5] == "/":
+            pattern = value[1:-5]
+            flags = value[-4:]
+        else:
+            raise DecoderError.invalid_input(value)
+    else:
+        return re.compile(value)
+
+    return re.compile(pattern, flags=sum(_REGEX_FLAGS[flag] for flag in flags))
 
 
 def decodable(_cls=None, use_init: bool = False) -> Any:

@@ -4,7 +4,7 @@ import ast
 import inspect
 import sys
 import typing
-from dataclasses import MISSING, Field, is_dataclass
+from dataclasses import MISSING, Field, InitVar, is_dataclass
 from enum import Enum
 from inspect import isclass as is_class
 from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union
@@ -228,8 +228,11 @@ def create_schema(cls: Type) -> TypeSchema:
     for name, p_type in properties.items():
         p_origin = get_origin_type(p_type)
 
+        if isinstance(p_type, InitVar):
+            continue
+
         # ignore class vars as they are not object properties
-        if p_origin and p_origin is ClassVar:
+        if p_origin and p_origin in (ClassVar, InitVar):
             continue
 
         if name in attributes:
