@@ -29,7 +29,7 @@ from chili.typing import (
     is_typed_dict,
     map_generic_type,
     resolve_forward_reference,
-    unpack_optional,
+    unpack_optional, create_schema_from_init, _USE_INIT,
 )
 
 from .error import EncoderError
@@ -57,11 +57,15 @@ class ProxyEncoder(TypeEncoder, Generic[T]):
         return self._encoder(value)
 
 
-def encodable(_cls=None) -> Any:
+def encodable(_cls=None, use_init: bool = False) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class encodable
         if not hasattr(cls, _PROPERTIES):
-            setattr(cls, _PROPERTIES, create_schema(cls))
+            if use_init:
+                setattr(cls, _PROPERTIES, create_schema_from_init(cls))
+                setattr(cls, _USE_INIT, True)
+            else:
+                setattr(cls, _PROPERTIES, create_schema(cls))
 
         setattr(cls, _ENCODABLE, True)
 
@@ -393,7 +397,7 @@ class Encoder(Generic[T]):
 
         result = {}
         for key, prop in self.schema.items():
-            value = getattr(obj, key, prop.default_value)
+            value = getattr(obj, prop.name, prop.default_value)
             if value is UNDEFINED:
                 continue
             result[key] = self._encoders[prop.name].encode(value)

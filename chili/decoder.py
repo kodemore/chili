@@ -44,7 +44,7 @@ from chili.typing import (
     is_typed_dict,
     map_generic_type,
     resolve_forward_reference,
-    unpack_optional,
+    unpack_optional, create_schema_from_init, _USE_INIT,
 )
 
 from .error import DecoderError
@@ -72,11 +72,15 @@ class ProxyDecoder(Generic[T]):
         return self._decoder(value)
 
 
-def decodable(_cls=None) -> Any:
+def decodable(_cls=None, use_init: bool = False) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class decodable
         if not hasattr(cls, _PROPERTIES):
-            setattr(cls, _PROPERTIES, create_schema(cls))
+            if use_init:
+                setattr(cls, _USE_INIT, True)
+                setattr(cls, _PROPERTIES, create_schema_from_init(cls))
+            else:
+                setattr(cls, _PROPERTIES, create_schema(cls))
 
         setattr(cls, _DECODABLE, True)
 
@@ -466,6 +470,13 @@ class Decoder(Generic[T]):
     def decode(self, obj: Dict[str, StateObject]) -> T:
         if not hasattr(self, "_decoders"):
             self._decoders = self._build_decoders()
+
+        if self.__generic__.__use_init__:
+            kwargs = {
+                key: self._decoders[prop.name].decode(obj[key])
+                for key, prop in self.schema.items()
+            }
+            return self.__generic__(**kwargs)
 
         instance = self.__generic__.__new__(self.__generic__)
 

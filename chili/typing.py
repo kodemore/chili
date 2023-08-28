@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import sys
 import typing
 from dataclasses import MISSING, Field, is_dataclass
@@ -12,6 +14,7 @@ from chili.error import SerialisationError
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
 _PROPERTIES = "__typed_properties__"
+_USE_INIT = "__use_init__"
 _ENCODABLE = "__encodable__"
 _DECODABLE = "__decodable__"
 UNDEFINED = object()
@@ -176,6 +179,30 @@ TypeSchema = NewType("TypeSchema", Dict[str, Property])
 
 _default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
 
+
+def create_schema_from_init(cls: Type):
+    parameters = inspect.signature(cls.__init__).parameters
+    source = inspect.getsource(cls.__init__)
+    spaces_to_remove = len(source) - len(source.lstrip())
+    source = "\n".join([line[spaces_to_remove:] for line in source.split("\n")])
+    schema = TypeSchema({})
+
+    init_tree = ast.parse(source)
+
+    for node in ast.walk(init_tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        if not isinstance(node.targets[0], ast.Attribute):
+            continue
+
+        if node.value.id in parameters:
+            schema[node.value.id] = Property(
+                str(node.targets[0].attr),
+                parameters[node.value.id].annotation,
+                parameters[node.value.id].default,
+            )
+
+    return schema
 
 def create_schema(cls: Type) -> TypeSchema:
     try:
