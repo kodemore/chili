@@ -18,6 +18,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Optional,
     Pattern,
     Protocol,
     Sequence,
@@ -32,6 +33,7 @@ from uuid import UUID
 
 from chili.typing import (
     _DECODABLE,
+    _DECODE_MAPPER,
     _PROPERTIES,
     UNDEFINED,
     TypeSchema,
@@ -54,6 +56,7 @@ from chili.typing import (
 
 from .error import DecoderError
 from .iso_datetime import parse_iso_date, parse_iso_datetime, parse_iso_duration, parse_iso_time
+from .mapper import Mapper
 from .state import StateObject
 
 C = TypeVar("C")
@@ -112,11 +115,13 @@ def decode_regex_from_string(value: str) -> Pattern:
     return re.compile(pattern, flags=sum(_REGEX_FLAGS[flag] for flag in flags))
 
 
-def decodable(_cls=None) -> Any:
+def decodable(_cls=None, mapper: Optional[Mapper] = None) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class decodable
         if not hasattr(cls, _PROPERTIES):
             setattr(cls, _PROPERTIES, create_schema(cls))
+            if mapper:
+                setattr(cls, _DECODE_MAPPER, mapper)
 
         setattr(cls, _DECODABLE, True)
 
@@ -519,6 +524,10 @@ class Decoder(Generic[T]):
             self._decoders = self._build_decoders()
 
         instance = self.__generic__.__new__(self.__generic__)
+
+        if hasattr(self.__generic__, _DECODE_MAPPER):
+            mapper = getattr(self.__generic__, _DECODE_MAPPER)
+            obj = mapper.map(obj)
 
         for key, prop in self.schema.items():
             if key not in obj:
