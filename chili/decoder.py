@@ -176,6 +176,17 @@ _builtin_type_decoders = TypeDecoders(
         datetime.date: ProxyDecoder[datetime.date](parse_iso_date),
         datetime.datetime: ProxyDecoder[datetime.datetime](parse_iso_datetime),
         datetime.timedelta: ProxyDecoder[datetime.timedelta](parse_iso_duration),
+        PurePath: ProxyDecoder[PurePath](PurePath),
+        PureWindowsPath: ProxyDecoder[PureWindowsPath](PureWindowsPath),
+        PurePosixPath: ProxyDecoder[PurePosixPath](PurePosixPath),
+        Path: ProxyDecoder[Path](Path),
+        PosixPath: ProxyDecoder[PosixPath](PosixPath),
+        WindowsPath: ProxyDecoder[WindowsPath](WindowsPath),
+        Pattern: ProxyDecoder[Pattern](decode_regex_from_string),
+        re.Pattern: ProxyDecoder[re.Pattern](decode_regex_from_string),
+        IPv4Address: ProxyDecoder[IPv4Address](IPv4Address),
+        IPv6Address: ProxyDecoder[IPv6Address](IPv6Address),
+        UUID: ProxyDecoder[UUID](UUID),
     }
 )
 
