@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from chili import encodable, encode, decodable, decode
+from chili import decodable, decode, encodable, encode
 
 
 def test_can_encode_internal_class() -> None:
@@ -26,14 +26,7 @@ def test_can_encode_internal_class() -> None:
             self.age = age
             self.tags = tags
 
-    pet = Pet(
-        "Bobek",
-        11,
-        [
-            Pet.Tag("first", "first_value"),
-            Pet.Tag("second", "second_value")
-        ]
-    )
+    pet = Pet("Bobek", 11, [Pet.Tag("first", "first_value"), Pet.Tag("second", "second_value")])
 
     # when
     result = encode(pet)

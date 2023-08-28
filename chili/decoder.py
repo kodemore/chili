@@ -124,9 +124,9 @@ def decodable(_cls=None, mapper: Optional[Mapper] = None) -> Any:
                 setattr(cls, _DECODE_MAPPER, mapper)
 
             inner_classes = [
-                icls for icls in cls.__dict__.values()
-                if isclass(icls) and icls.__module__ == cls.__module__
-                   and not hasattr(icls, _PROPERTIES)
+                icls
+                for icls in cls.__dict__.values()
+                if isclass(icls) and icls.__module__ == cls.__module__ and not hasattr(icls, _PROPERTIES)
             ]
             for inner_class in inner_classes:
                 _decorate(inner_class)
