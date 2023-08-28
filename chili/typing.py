@@ -181,7 +181,7 @@ _default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
 
 def create_schema(cls: Type) -> TypeSchema:
     try:
-        properties = typing.get_type_hints(cls)
+        properties = typing.get_type_hints(cls, localns=cls.__dict__)
     except NameError as e:
         raise SerialisationError.invalid_type from e
 
