@@ -1,11 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar
 
 from chili.decoder import Decoder
 from chili.encoder import Encoder
 from chili.error import SerialisationError
-from chili.typing import _DECODABLE, _ENCODABLE, _PROPERTIES, create_schema, is_class, is_dataclass
+from chili.mapper import Mapper
+from chili.typing import (
+    _DECODABLE,
+    _DECODE_MAPPER,
+    _ENCODABLE,
+    _ENCODE_MAPPER,
+    _PROPERTIES,
+    create_schema,
+    is_class,
+    is_dataclass,
+)
 
 C = TypeVar("C")
 T = TypeVar("T")
@@ -38,10 +48,14 @@ class Serializer(Encoder, Decoder, Generic[T]):
         )
 
 
-def serializable(_cls=None) -> Any:
+def serializable(_cls=None, in_mapper: Optional[Mapper] = None, out_mapper: Optional[Mapper] = None) -> Any:
     def _decorate(cls) -> Type[C]:
         if not hasattr(cls, _PROPERTIES):
             setattr(cls, _PROPERTIES, create_schema(cls))
+            if in_mapper is not None:
+                setattr(cls, _DECODE_MAPPER, in_mapper)
+            if out_mapper is not None:
+                setattr(cls, _ENCODE_MAPPER, out_mapper)
 
         setattr(cls, _DECODABLE, True)
         setattr(cls, _ENCODABLE, True)

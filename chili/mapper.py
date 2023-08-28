@@ -5,12 +5,13 @@ from typing import Any, Callable, Dict, Union
 from chili.error import MapperError
 
 KeyScheme = namedtuple("KeyScheme", "key scheme")
-MappingScheme = Dict[str, Union[Dict, str, Callable, KeyScheme]]
+MappingScheme = Dict[Union[str, Any], Union[Dict, str, Callable, KeyScheme]]
 
 
 class Mapper:
-    def __init__(self, scheme: Union[MappingScheme]):
+    def __init__(self, scheme: Union[MappingScheme], preserve_keys: bool = False):
         self.scheme = scheme
+        self.preserve_keys = preserve_keys
 
     def map(self, data: Dict[str, Any], skip_keys: bool = False, default_value: Any = None) -> Dict[str, Any]:
         return self._map(data, self.scheme, skip_keys, default_value)
@@ -82,5 +83,6 @@ class Mapper:
                 continue
             else:
                 raise MapperError.invalid_value
-
+        if self.preserve_keys:
+            return {**{key: value for key, value in data.items() if key not in evaluated_keys}, **result}
         return result

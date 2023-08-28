@@ -12,6 +12,8 @@ from chili.error import SerialisationError
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
 _PROPERTIES = "__typed_properties__"
+_DECODE_MAPPER = "__decode_mapper__"
+_ENCODE_MAPPER = "__encode_mapper__"
 _ENCODABLE = "__encodable__"
 _DECODABLE = "__decodable__"
 UNDEFINED = object()

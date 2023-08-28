@@ -365,11 +365,56 @@ The `mapped_data` output would be:
 }
 ```
 
+### Using mapping in decodable/encodable objects
+
+You can also use mapping by setting `mapper` parameter in `@chili.encodable` and `@chili.decodable` decorators.
+
+```python
+from typing import List
+
+from chili import encodable, Mapper, encode
+
+mapper = Mapper({
+    "pet_name": "name",
+    "pet_age": "age",
+    "pet_tags": {
+        "tag_name": "tag",
+        "tag_type": "type",
+    },
+})
+
+
+@encodable(mapper=mapper)
+class Pet:
+    name: str
+    age: int
+    tags: List[str]
+
+    def __init__(self, name: str, age: int, tags: List[str]):
+        self.name = name
+        self.age = age
+        self.tags = tags
+
+
+pet = Pet("Max", 3, ["cute", "furry"])
+encoded = encode(pet)
+
+assert encoded == {
+    "pet_name": "Max",
+    "pet_age": 3,
+    "pet_tags": [
+        {"tag_name": "cute", "tag_type": "description"},
+        {"tag_name": "furry", "tag_type": "description"},
+    ],
+}
+```
+
 ## Error handling
 The library raises errors if an invalid type is passed to the Encoder or Decoder, or if an invalid dictionary is passed to the Decoder.
 
 ```python
-from chili import Encoder, EncoderError, Decoder, DecoderError
+from chili import Encoder, Decoder
+from chili.error import EncoderError, DecoderError
 
 # Invalid Type
 encoder = Encoder[MyInvalidType]()  # Raises EncoderError.invalid_type

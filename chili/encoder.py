@@ -17,8 +17,10 @@ from uuid import UUID
 
 from chili.typing import (
     _ENCODABLE,
+    _ENCODE_MAPPER,
     _PROPERTIES,
     UNDEFINED,
+    Optional,
     TypeSchema,
     create_schema,
     get_origin_type,
@@ -38,6 +40,7 @@ from chili.typing import (
 
 from .error import EncoderError
 from .iso_datetime import timedelta_to_iso_duration
+from .mapper import Mapper
 from .state import StateObject
 
 C = TypeVar("C")
@@ -81,11 +84,13 @@ def encode_regex_to_string(value: Pattern) -> str:
     return value.pattern
 
 
-def encodable(_cls=None) -> Any:
+def encodable(_cls=None, mapper: Optional[Mapper] = None) -> Any:
     def _decorate(cls) -> Type[C]:
         # Attach schema to make the class encodable
         if not hasattr(cls, _PROPERTIES):
             setattr(cls, _PROPERTIES, create_schema(cls))
+            if mapper:
+                setattr(cls, _ENCODE_MAPPER, mapper)
 
         setattr(cls, _ENCODABLE, True)
 
@@ -432,6 +437,10 @@ class Encoder(Generic[T]):
             if value is UNDEFINED:
                 continue
             result[key] = self._encoders[prop.name].encode(value)
+
+        if hasattr(self.__generic__, _ENCODE_MAPPER):
+            mapper = getattr(self.__generic__, _ENCODE_MAPPER)
+            return mapper.map(result)
 
         return result
 

@@ -346,3 +346,34 @@ def test_can_map_complex_format() -> None:
         "id": "103",
         "title": "Book 103 Title",
     }
+
+
+def test_can_map_with_preserve_keys() -> None:
+    # given
+    data = {
+        "name": "Pimpek",
+        "age": 4,
+        "tags": [
+            {"name": "tag-1"},
+            {"name": "tag-2"},
+            {"name": "tag-3"},
+            {"name": "tag-4"},
+        ],
+    }
+
+    mapper = Mapper({"_name": "name"}, preserve_keys=True)
+
+    # when
+    result = mapper.map(data)
+
+    # then
+    assert result == {
+        "_name": "Pimpek",
+        "age": 4,
+        "tags": [
+            {"name": "tag-1"},
+            {"name": "tag-2"},
+            {"name": "tag-3"},
+            {"name": "tag-4"},
+        ],
+    }
