@@ -167,7 +167,7 @@ class Property:
         if self._default_factory:
             return self._default_factory()
 
-        return UNDEFINED
+        return None
 
     def __eq__(self, other: Property) -> bool:  # type: ignore
         return self.name == other.name and self.type is other.type

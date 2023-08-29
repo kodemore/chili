@@ -539,7 +539,10 @@ class Decoder(Generic[T]):
 
         for key, prop in self.schema.items():
             if key not in obj:
-                value = prop.default_value
+                if is_optional(prop.type):
+                    value = prop.default_value
+                else:
+                    raise DecoderError.missing_property(key=key)
             else:
                 value = self._decoders[prop.name].decode(obj[key])
 

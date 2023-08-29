@@ -6,6 +6,7 @@ class SerialisationError(Error):
     strict_type_violation: ValueError
     invalid_type: TypeError
     invalid_input: ValueError
+    missing_property: KeyError
 
 
 class DecoderError(SerialisationError):

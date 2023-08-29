@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from chili import Decoder, Mapper, decodable
 
@@ -9,8 +9,8 @@ def test_decodable_with_default_values() -> None:
     class Book:
         name: str
         author: str
-        isbn: str = "1234567890"
-        tags: List[str] = []
+        isbn: Optional[str] = "1234567890"
+        tags: Optional[List[str]] = []
 
     book_data = {"name": "The Hobbit", "author": "J.R.R. Tolkien"}
     decoder = Decoder[Book]()

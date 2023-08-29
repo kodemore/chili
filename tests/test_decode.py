@@ -7,6 +7,7 @@ import pytest
 
 from chili import decodable, decode
 from chili.decoder import decode_regex_from_string
+from chili.error import DecoderError
 
 
 def test_can_decode_dataclass() -> None:
@@ -204,3 +205,51 @@ def test_decode_regex_with_flags_from_str() -> None:
     assert result.flags & re.M
     assert result.flags & re.S
     assert result.flags & re.X
+
+
+def test_can_decode_incomplete_object_with_optional_property() -> None:
+    # given
+    @decodable
+    class Tag:
+        value: Optional[str]
+
+        def __init__(self, value: str):
+            self.value = value
+
+    @decodable
+    class Pet:
+        name: str
+        age: int
+        tags: List[Tag]
+
+    pet_data = {"name": "Bobik", "age": 3, "tags": [{"_": "value"}]}
+
+    # when
+    pet = decode(pet_data, Pet)
+
+    # then
+    assert isinstance(pet, Pet)
+    assert isinstance(pet.tags[0], Tag)
+    assert pet.tags[0].value is None
+
+
+def test_fail_to_decode_incomplete_object() -> None:
+    # given
+    @decodable
+    class Tag:
+        value: str
+
+        def __init__(self, value: str):
+            self.value = value
+
+    @decodable
+    class Pet:
+        name: str
+        age: int
+        tags: List[Tag]
+
+    pet_data = {"name": "Bobik", "age": 3, "tags": [{"_": "value"}]}
+
+    # when
+    with pytest.raises(DecoderError.missing_property):
+        pet = decode(pet_data, Pet)
