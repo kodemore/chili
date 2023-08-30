@@ -441,8 +441,11 @@ class Encoder(Generic[T]):
 
         result = {}
         for key, prop in self.schema.items():
-            value = getattr(obj, key, prop.default_value)
-            if value is UNDEFINED:
+            if hasattr(obj, key):
+                value = getattr(obj, key)
+            elif is_optional(prop.type):
+                value = prop.default_value
+            else:
                 continue
             result[key] = self._encoders[prop.name].encode(value)
 

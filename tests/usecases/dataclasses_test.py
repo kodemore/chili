@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Generic, List, TypeVar
+from typing import Generic, List, Optional, TypeVar
 
 import pytest
 
@@ -123,7 +123,7 @@ def test_can_decode_with_default_values() -> None:
     class Book:
         name: str
         author: str
-        tags: List[str] = field(default_factory=list)
+        tags: Optional[List[str]] = field(default_factory=list)
 
     book_data = {"name": "The Hobbit", "author": "J.R.R. Tolkien"}
     decoder = Decoder[Book]()
