@@ -28,6 +28,7 @@ from typing import (
     Union,
     final,
     get_origin,
+    get_type_hints,
 )
 from uuid import UUID
 
@@ -303,7 +304,7 @@ class UnionDecoder(TypeDecoder):
             value_keys = value.keys()
             for decodable, decoder in self._type_decoders.items():
                 try:
-                    if not is_decodable(decodable) and value_keys == getattr(decodable, "__annotations__", {}).keys():
+                    if not is_decodable(decodable) and value_keys == get_type_hints(decodable).keys():
                         return decoder.decode(value)
                     if is_decodable(decodable) and value_keys == getattr(decodable, _PROPERTIES, {}).keys():
                         return decoder.decode(value)
