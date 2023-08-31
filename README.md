@@ -1,4 +1,4 @@
-# Chili 
+# 🌶️ Chili 
 [![PyPI version](https://badge.fury.io/py/chili.svg)](https://pypi.org/project/chili) [![codecov](https://codecov.io/gh/kodemore/chili/branch/main/graph/badge.svg?token=TCG7SRQFD5)](https://codecov.io/gh/kodemore/chili) [![CI](https://github.com/kodemore/chili/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/kodemore/chili/actions/workflows/main.yaml) [![Release](https://github.com/kodemore/chili/actions/workflows/release.yml/badge.svg)](https://github.com/kodemore/chili/actions/workflows/release.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Chili is an extensible library which provides a simple and efficient way to encode and decode complex Python objects to and from their dictionary representation.
