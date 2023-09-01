@@ -47,5 +47,5 @@ books = [
     ),
 ]
 
-encoded = [book.model_dump() for book in books]
-print(encoded)
+raw_data = [book.model_dump() for book in books]
+print(raw_data)

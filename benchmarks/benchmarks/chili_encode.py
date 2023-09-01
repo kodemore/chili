@@ -53,5 +53,5 @@ books = [
     ),
 ]
 
-encoded = encode(books, List[Book])
-print(encoded)
+raw_data = encode(books, List[Book])
+print(raw_data)

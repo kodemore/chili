@@ -12,6 +12,7 @@ pydantic = "^2.3.0"
 msgspec = "^0.18.2"
 attrs = "^23.1.0"
 cattrs = "^23.1.2"
+marshmallow = "^3.20.1"
 
 
 [build-system]

@@ -51,5 +51,5 @@ books = [
     ),
 ]
 
-encoded = unstructure(books)
-print(encoded)
+raw_data = unstructure(books)
+print(raw_data)
