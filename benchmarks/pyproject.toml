@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "benchmarks"
+version = "0.1.0"
+description = ""
+authors = ["Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+chili = "^2.4.1"
+pydantic = "^2.3.0"
+msgspec = "^0.18.2"
+attrs = "^23.1.0"
+cattrs = "^23.1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
