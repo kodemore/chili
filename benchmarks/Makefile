@@ -3,6 +3,7 @@ PWD := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 benchmark:
 	hyperfine --export-markdown README.md \
+		'poetry run python --version'\
 		'poetry run python benchmarks/chili_decode.py'\
 		'poetry run python benchmarks/pydantic_decode.py'\
 		'poetry run python benchmarks/attrs_decode.py'\
