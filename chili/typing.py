@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import typing
+from collections import UserString
 from dataclasses import MISSING, Field, InitVar, is_dataclass
 from enum import Enum
 from inspect import isclass as is_class
@@ -112,6 +113,9 @@ def is_named_tuple(type_name: Type) -> bool:
 def is_typed_dict(type_name: Type) -> bool:
     return issubclass(type_name, dict) and hasattr(type_name, "__annotations__")
 
+
+def is_user_string(type_name: Type) -> bool:
+    return issubclass(type_name, UserString)
 
 def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
     if not type_map:

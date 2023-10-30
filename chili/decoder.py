@@ -50,6 +50,7 @@ from chili.typing import (
     is_newtype,
     is_optional,
     is_typed_dict,
+    is_user_string,
     map_generic_type,
     resolve_forward_reference,
     unpack_optional,
@@ -470,6 +471,9 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
     if is_class(origin_type) and is_typed_dict(origin_type):
         return TypedDictDecoder(origin_type, extra_decoders)
 
+    if is_class(origin_type) and is_user_string(origin_type):
+        return ProxyDecoder[origin_type](origin_type)
+
     if origin_type is Union:
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):  # type: ignore
@@ -568,7 +572,7 @@ class Decoder(Generic[T]):
             item = decodable(item)
 
         if not hasattr(item, _DECODABLE):
-            raise DecoderError.invalid_type
+            item = decodable(item)
 
         return type(  # type: ignore
             f"{cls.__qualname__}[{item.__module__}.{item.__qualname__}]",
