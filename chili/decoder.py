@@ -472,7 +472,7 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         return TypedDictDecoder(origin_type, extra_decoders)
 
     if is_class(origin_type) and is_user_string(origin_type):
-        return ProxyDecoder[origin_type](origin_type)
+        return ProxyDecoder[origin_type](origin_type)  # type: ignore
 
     if origin_type is Union:
         type_args = get_type_args(a_type)

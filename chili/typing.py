@@ -117,6 +117,7 @@ def is_typed_dict(type_name: Type) -> bool:
 def is_user_string(type_name: Type) -> bool:
     return issubclass(type_name, UserString)
 
+
 def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
     if not type_map:
         return type_name

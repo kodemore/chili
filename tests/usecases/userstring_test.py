@@ -21,6 +21,7 @@ def test_can_decode_userstring() -> None:
     # given
     class ComplexString(UserString):
         pass
+
     string = "Example String"
 
     # when
