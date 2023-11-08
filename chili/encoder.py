@@ -505,14 +505,15 @@ def encode(
     obj: Any,
     type_hint: Type = None,
     encoders: Union[TypeEncoders, Dict[Any, TypeEncoder]] = None,
+    force: bool = False,
 ) -> StateObject:
     if encoders and not isinstance(encoders, TypeEncoders):
         encoders = TypeEncoders(encoders)
 
     if type_hint is not None:
-        encoder = build_type_encoder(type_hint, extra_encoders=encoders)  # type: ignore
+        encoder = build_type_encoder(type_hint, extra_encoders=encoders, force=force)  # type: ignore
     else:
-        encoder = build_type_encoder(type(obj), extra_encoders=encoders)  # type: ignore
+        encoder = build_type_encoder(type(obj), extra_encoders=encoders, force=force)  # type: ignore
 
     if encoder is None:
         raise EncoderError.invalid_input

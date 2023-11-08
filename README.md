@@ -79,6 +79,8 @@ encoded = encode(my_pet, Pet)
 assert encoded == {"name": "Max", "age": 3, "breed": "Golden Retriever"}
 ```
 
+> `chili.encode` function by default only encodes `@encodable` objects, this behavior might be amended with the `force` flag.
+
 ## Decoding
 To decode an object, you need to create an instance of the `chili.Decoder` class, and then call the `decode()` method, passing the dictionary to be decoded as an argument.
 
@@ -106,6 +108,8 @@ decoded = decode(data, Pet)
 
 assert isinstance(decoded, Pet)
 ```
+
+> `chili.decode` function by default only decodes `@decodable` objects, this behavior might be amended with the `force` flag.
 
 ## Missing Properties
 If a property is not present in the dictionary when decoding, the `chili.Decoder` class will not fill in the property value, unless there is a default value defined in the type annotation. Similarly, if a property is not defined on the class, the `chili.Encoder` class will hide the property in the resulting dictionary.
@@ -206,7 +210,7 @@ encoded = serializer.encode(my_pet)
 decoded = serializer.decode(encoded)
 ```
 
-> Note: that you should only use the `@serializable` decorator for objects that are both encodable and decodable.
+> Note: that you should only use the `@serializable` decorator for objects that are both @encodable and @decodable.
 
 
 ## JSON Serialization
@@ -234,6 +238,32 @@ The `encoded` value will be a json string:
 The `decoded` value will be an instance of a Pet object.
 
 > Functional interface is also available through the `chili.json_encode`, `chili.json_decode` functions.
+
+## Private properties
+Chili recognizes private attributes within a class, enabling it to serialize these attributes when a class specifies a getter for an attribute and an associated private storage (must be denoted with a `_` prefix).
+
+Here is an example:
+
+```python
+from chili import encodable, encode
+
+@encodable
+class Pet:
+    name: str
+
+    def __init__(self, name: str) -> None:
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+pet = Pet("Bobik")
+data = encode(pet)
+assert data == {
+    "name": "Bobik",
+}
+```
 
 ## Mapping
 

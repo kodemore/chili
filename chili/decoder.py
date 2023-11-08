@@ -603,11 +603,12 @@ def decode(
     obj: StateObject,
     a_type: Type[T],
     decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None,
+    force: bool = False
 ) -> T:
     if decoders and not isinstance(decoders, TypeDecoders):
         decoders = TypeDecoders(decoders)
 
-    decoder = build_type_decoder(a_type, extra_decoders=decoders)  # type: ignore
+    decoder = build_type_decoder(a_type, extra_decoders=decoders, force=force)  # type: ignore
     if decoder is None:
         raise DecoderError.invalid_type
 
