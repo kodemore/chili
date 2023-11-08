@@ -1,9 +1,6 @@
 from collections import UserString
 
-import pytest
-
-from chili import Encoder, encodable
-from chili.error import EncoderError
+from chili import Encoder, Mapper, encodable
 
 
 def test_can_instantiate() -> None:
@@ -62,4 +59,32 @@ def test_can_encode_complex_non_encodable_type() -> None:
     assert value == {
         "name": "bob",
         "age": 33,
+    }
+
+
+def test_encode_and_map() -> None:
+    # given
+    class Example:
+        name: str
+        age: int
+
+        def __init__(self, name: str, age: int):
+            self.name = name
+            self.age = age
+
+    mapper = Mapper(
+        {
+            "_name": "name",
+            "_age": "age",
+        }
+    )
+    encoder = Encoder[Example](mapper=mapper)
+
+    # when
+    data = encoder.encode(Example("Bobik", 11))
+
+    # then
+    assert data == {
+        "_name": "Bobik",
+        "_age": 11,
     }

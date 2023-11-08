@@ -461,6 +461,15 @@ assert encoded == {
 }
 ```
 
+Alternatively you can set mapper in `Encoder` and `Decoder` classes:
+
+```python
+encoder = Encoder[Pet](mapper=mapper)
+
+pet = Pet("Max", 3, ["cute", "furry"])
+encoded = encoder.encode(pet)
+```
+
 ## Error handling
 The library raises errors if an invalid type is passed to the Encoder or Decoder, or if an invalid dictionary is passed to the Decoder.
 

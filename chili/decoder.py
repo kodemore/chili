@@ -536,9 +536,10 @@ class Decoder(Generic[T]):
     __generic__: Type[T]
     _decoders: Dict[str, TypeDecoder]
 
-    def __init__(self, decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None):
+    def __init__(self, decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None, mapper: Optional[Mapper] = None):
         if decoders and not isinstance(decoders, TypeDecoders):
             decoders = TypeDecoders(decoders)
+        self.mapper = mapper
         self.type_decoders = decoders
 
     @property
@@ -554,6 +555,8 @@ class Decoder(Generic[T]):
         if hasattr(self.__generic__, _DECODE_MAPPER):
             mapper = getattr(self.__generic__, _DECODE_MAPPER)
             obj = mapper.map(obj)
+        elif self.mapper:
+            obj = self.mapper.map(obj)
 
         for key, prop in self.schema.items():
             if key not in obj:
@@ -600,10 +603,7 @@ class Decoder(Generic[T]):
 
 
 def decode(
-    obj: StateObject,
-    a_type: Type[T],
-    decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None,
-    force: bool = False
+    obj: StateObject, a_type: Type[T], decoders: Union[TypeDecoders, Dict[Any, TypeDecoder]] = None, force: bool = False
 ) -> T:
     if decoders and not isinstance(decoders, TypeDecoders):
         decoders = TypeDecoders(decoders)
