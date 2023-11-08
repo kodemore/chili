@@ -42,8 +42,8 @@ class Serializer(Encoder, Decoder, Generic[T]):
         if is_dataclass(item):
             item = serializable(item)
 
-        if not hasattr(item, _DECODABLE) or not hasattr(item, _ENCODABLE):
-            raise SerialisationError.invalid_type
+        if not hasattr(item, _DECODABLE) and not hasattr(item, _ENCODABLE):
+            item = serializable(item)
 
         return type(  # type: ignore
             f"{cls.__qualname__}[{item.__module__}.{item.__qualname__}]",
