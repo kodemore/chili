@@ -5,6 +5,7 @@ import typing
 from collections import UserString
 from dataclasses import MISSING, Field, InitVar, is_dataclass
 from enum import Enum
+from functools import lru_cache
 from inspect import isclass as is_class
 from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union
 
@@ -184,6 +185,7 @@ TypeSchema = NewType("TypeSchema", Dict[str, Property])
 _default_factories = (list, dict, tuple, set, bytes, bytearray, frozenset)
 
 
+@lru_cache
 def create_schema(cls: Type) -> TypeSchema:
     try:
         properties = typing.get_type_hints(cls, localns=cls.__dict__)  # type: ignore

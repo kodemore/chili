@@ -57,12 +57,21 @@ class TypeEncoder(Protocol):
 
 
 @final
-class ProxyEncoder(TypeEncoder, Generic[T]):
+class SimpleEncoder(TypeEncoder, Generic[T]):
     def __init__(self, func: Callable[[Any], T]):
         self._encoder = func
 
     def encode(self, value: Any) -> T:
         return self._encoder(value)
+
+
+@final
+class ProxyEncoder(Generic[T]):
+    def __init__(self, type_annotation: Any) -> None:
+        self._encoder = build_type_encoder(type_annotation)
+
+    def decode(self, value: Any) -> T:
+        return self._encoder.encode(value)
 
 
 def encode_regex_to_string(value: Pattern) -> str:
@@ -126,44 +135,44 @@ def ordered_dict(value: collections.OrderedDict) -> List[List[Any]]:
 
 _builtin_type_encoders = TypeEncoders(
     {
-        bool: ProxyEncoder[bool](bool),
-        int: ProxyEncoder[int](int),
-        float: ProxyEncoder[float](float),
-        str: ProxyEncoder[str](str),
-        bytes: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
-        bytearray: ProxyEncoder[str](lambda value: b64encode(value).decode("utf8")),
-        list: ProxyEncoder[list](list),
-        set: ProxyEncoder[list](list),
-        frozenset: ProxyEncoder[list](list),
-        tuple: ProxyEncoder[list](list),
-        dict: ProxyEncoder[dict](dict),
-        collections.OrderedDict: ProxyEncoder[list](ordered_dict),
-        collections.deque: ProxyEncoder[list](list),
-        typing.TypedDict: ProxyEncoder[dict](dict),  # type: ignore
-        typing.Dict: ProxyEncoder[dict](dict),
-        typing.List: ProxyEncoder[list](list),
-        typing.Sequence: ProxyEncoder[list](list),
-        typing.Tuple: ProxyEncoder[list](list),  # type: ignore
-        typing.Set: ProxyEncoder[list](list),
-        typing.FrozenSet: ProxyEncoder[list](list),
-        typing.Deque: ProxyEncoder[list](list),
-        typing.AnyStr: ProxyEncoder[str](str),  # type: ignore
-        decimal.Decimal: ProxyEncoder[str](str),
-        datetime.time: ProxyEncoder[str](lambda value: value.isoformat()),
-        datetime.date: ProxyEncoder[str](lambda value: value.isoformat()),
-        datetime.datetime: ProxyEncoder[str](lambda value: value.isoformat()),
-        datetime.timedelta: ProxyEncoder[str](timedelta_to_iso_duration),
-        PurePath: ProxyEncoder[str](str),
-        PureWindowsPath: ProxyEncoder[str](str),
-        PurePosixPath: ProxyEncoder[str](str),
-        Path: ProxyEncoder[str](str),
-        PosixPath: ProxyEncoder[str](str),
-        WindowsPath: ProxyEncoder[str](str),
-        Pattern: ProxyEncoder[str](encode_regex_to_string),
-        re.Pattern: ProxyEncoder[str](encode_regex_to_string),
-        IPv6Address: ProxyEncoder[str](str),
-        IPv4Address: ProxyEncoder[str](str),
-        UUID: ProxyEncoder[str](str),
+        bool: SimpleEncoder[bool](bool),
+        int: SimpleEncoder[int](int),
+        float: SimpleEncoder[float](float),
+        str: SimpleEncoder[str](str),
+        bytes: SimpleEncoder[str](lambda value: b64encode(value).decode("utf8")),
+        bytearray: SimpleEncoder[str](lambda value: b64encode(value).decode("utf8")),
+        list: SimpleEncoder[list](list),
+        set: SimpleEncoder[list](list),
+        frozenset: SimpleEncoder[list](list),
+        tuple: SimpleEncoder[list](list),
+        dict: SimpleEncoder[dict](dict),
+        collections.OrderedDict: SimpleEncoder[list](ordered_dict),
+        collections.deque: SimpleEncoder[list](list),
+        typing.TypedDict: SimpleEncoder[dict](dict),  # type: ignore
+        typing.Dict: SimpleEncoder[dict](dict),
+        typing.List: SimpleEncoder[list](list),
+        typing.Sequence: SimpleEncoder[list](list),
+        typing.Tuple: SimpleEncoder[list](list),  # type: ignore
+        typing.Set: SimpleEncoder[list](list),
+        typing.FrozenSet: SimpleEncoder[list](list),
+        typing.Deque: SimpleEncoder[list](list),
+        typing.AnyStr: SimpleEncoder[str](str),  # type: ignore
+        decimal.Decimal: SimpleEncoder[str](str),
+        datetime.time: SimpleEncoder[str](lambda value: value.isoformat()),
+        datetime.date: SimpleEncoder[str](lambda value: value.isoformat()),
+        datetime.datetime: SimpleEncoder[str](lambda value: value.isoformat()),
+        datetime.timedelta: SimpleEncoder[str](timedelta_to_iso_duration),
+        PurePath: SimpleEncoder[str](str),
+        PureWindowsPath: SimpleEncoder[str](str),
+        PurePosixPath: SimpleEncoder[str](str),
+        Path: SimpleEncoder[str](str),
+        PosixPath: SimpleEncoder[str](str),
+        WindowsPath: SimpleEncoder[str](str),
+        Pattern: SimpleEncoder[str](encode_regex_to_string),
+        re.Pattern: SimpleEncoder[str](encode_regex_to_string),
+        IPv6Address: SimpleEncoder[str](str),
+        IPv4Address: SimpleEncoder[str](str),
+        UUID: SimpleEncoder[str](str),
     }
 )
 
@@ -227,7 +236,7 @@ class ClassEncoder(TypeEncoder):
     def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
         self.class_name = class_name
         self._extra_encoders = extra_encoders
-        self._schema = create_schema(class_name)
+        self._schema = create_schema(class_name)  # type: ignore
 
     def encode(self, value: Any) -> StateObject:
         if not isinstance(value, self.class_name):
@@ -349,7 +358,9 @@ _supported_generics = {
 
 
 @lru_cache(maxsize=None)
-def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module: Any = None) -> TypeEncoder:
+def build_type_encoder(
+    a_type: Type, extra_encoders: TypeEncoders = None, module: Any = None, force: bool = False
+) -> TypeEncoder:
     if extra_encoders and a_type in extra_encoders:
         return extra_encoders[a_type]
 
@@ -381,7 +392,7 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         return TypedDictEncoder(origin_type, extra_encoders)
 
     if is_class(origin_type) and is_user_string(origin_type):
-        return ProxyEncoder[str](str)
+        return SimpleEncoder[str](str)
 
     if origin_type is Union:
         type_args = get_type_args(a_type)
@@ -402,9 +413,6 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
             return GenericClassEncoder(a_type)
         return Encoder[origin_type](encoders=extra_encoders)  # type: ignore[valid-type]
 
-    if is_optional(a_type):
-        return OptionalTypeEncoder(build_type_encoder(unpack_optional(a_type), extra_encoders))  # type: ignore
-
     if isinstance(a_type, TypeVar):
         if a_type.__bound__ is None:
             raise EncoderError.invalid_type(a_type)
@@ -414,7 +422,9 @@ def build_type_encoder(a_type: Type, extra_encoders: TypeEncoders = None, module
         return build_type_encoder(a_type.__supertype__, extra_encoders, module)
 
     if origin_type not in _supported_generics:
-        raise EncoderError.invalid_type(a_type)
+        if is_class(origin_type) and force:
+            return Encoder[origin_type](encoders=extra_encoders)  # type: ignore[valid-type]
+        raise EncoderError.invalid_type(type=a_type)
 
     type_attributes: List[TypeEncoder] = [
         build_type_encoder(subtype, extra_encoders=extra_encoders, module=module)  # type: ignore
@@ -467,7 +477,7 @@ class Encoder(Generic[T]):
         schema: TypeSchema = self.schema
 
         return {
-            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders)  # type: ignore
+            prop.name: build_type_encoder(prop.type, extra_encoders=self.type_encoders, force=True)  # type: ignore
             for prop in schema.values()
         }
 

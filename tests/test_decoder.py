@@ -1,7 +1,4 @@
-import pytest
-
 from chili import Decoder, decodable
-from chili.error import DecoderError
 
 
 def test_can_instantiate() -> None:

@@ -74,12 +74,21 @@ class TypeDecoder(Protocol):
 
 
 @final
-class ProxyDecoder(Generic[T]):
-    def __init__(self, func: Callable[[Any], T]):
+class SimpleDecoder(Generic[T]):
+    def __init__(self, func: Callable[[Any], T]) -> None:
         self._decoder = func
 
     def decode(self, value: Any) -> T:
         return self._decoder(value)
+
+
+@final
+class ProxyDecoder(Generic[T]):
+    def __init__(self, type_annotation: Any) -> None:
+        self._decoder = build_type_decoder(type_annotation)
+
+    def decode(self, value: Any) -> T:
+        return self._decoder.decode(value)
 
 
 _REGEX_FLAGS = {
@@ -158,44 +167,44 @@ def ordered_dict(value: List[List[Any]]) -> collections.OrderedDict:
 
 _builtin_type_decoders = TypeDecoders(
     {
-        bool: ProxyDecoder[bool](bool),
-        int: ProxyDecoder[int](int),
-        float: ProxyDecoder[float](float),
-        str: ProxyDecoder[str](str),
-        bytes: ProxyDecoder[bytes](lambda value: b64decode(value.encode("utf8"))),
-        bytearray: ProxyDecoder[bytearray](lambda value: bytearray(b64decode(value.encode("utf8")))),
-        list: ProxyDecoder[list](list),
-        set: ProxyDecoder[set](set),
-        frozenset: ProxyDecoder[frozenset](frozenset),
-        tuple: ProxyDecoder[tuple](tuple),
-        dict: ProxyDecoder[dict](dict),
-        collections.OrderedDict: ProxyDecoder[collections.OrderedDict](ordered_dict),
-        collections.deque: ProxyDecoder[collections.deque](collections.deque),
-        typing.TypedDict: ProxyDecoder[typing.TypedDict](typing.TypedDict),  # type: ignore
-        typing.Dict: ProxyDecoder[dict](dict),
-        typing.List: ProxyDecoder[list](list),
-        typing.Sequence: ProxyDecoder[list](list),
-        typing.Tuple: ProxyDecoder[tuple](tuple),  # type: ignore
-        typing.Set: ProxyDecoder[set](set),
-        typing.FrozenSet: ProxyDecoder[frozenset](frozenset),
-        typing.Deque: ProxyDecoder[typing.Deque](typing.Deque),
-        typing.AnyStr: ProxyDecoder[str](str),  # type: ignore
-        decimal.Decimal: ProxyDecoder[decimal.Decimal](decimal.Decimal),
-        datetime.time: ProxyDecoder[datetime.time](parse_iso_time),
-        datetime.date: ProxyDecoder[datetime.date](parse_iso_date),
-        datetime.datetime: ProxyDecoder[datetime.datetime](parse_iso_datetime),
-        datetime.timedelta: ProxyDecoder[datetime.timedelta](parse_iso_duration),
-        PurePath: ProxyDecoder[PurePath](PurePath),
-        PureWindowsPath: ProxyDecoder[PureWindowsPath](PureWindowsPath),
-        PurePosixPath: ProxyDecoder[PurePosixPath](PurePosixPath),
-        Path: ProxyDecoder[Path](Path),
-        PosixPath: ProxyDecoder[PosixPath](PosixPath),
-        WindowsPath: ProxyDecoder[WindowsPath](WindowsPath),
-        Pattern: ProxyDecoder[Pattern](decode_regex_from_string),
-        re.Pattern: ProxyDecoder[re.Pattern](decode_regex_from_string),
-        IPv4Address: ProxyDecoder[IPv4Address](IPv4Address),
-        IPv6Address: ProxyDecoder[IPv6Address](IPv6Address),
-        UUID: ProxyDecoder[UUID](UUID),
+        bool: SimpleDecoder[bool](bool),
+        int: SimpleDecoder[int](int),
+        float: SimpleDecoder[float](float),
+        str: SimpleDecoder[str](str),
+        bytes: SimpleDecoder[bytes](lambda value: b64decode(value.encode("utf8"))),
+        bytearray: SimpleDecoder[bytearray](lambda value: bytearray(b64decode(value.encode("utf8")))),
+        list: SimpleDecoder[list](list),
+        set: SimpleDecoder[set](set),
+        frozenset: SimpleDecoder[frozenset](frozenset),
+        tuple: SimpleDecoder[tuple](tuple),
+        dict: SimpleDecoder[dict](dict),
+        collections.OrderedDict: SimpleDecoder[collections.OrderedDict](ordered_dict),
+        collections.deque: SimpleDecoder[collections.deque](collections.deque),
+        typing.TypedDict: SimpleDecoder[typing.TypedDict](typing.TypedDict),  # type: ignore
+        typing.Dict: SimpleDecoder[dict](dict),
+        typing.List: SimpleDecoder[list](list),
+        typing.Sequence: SimpleDecoder[list](list),
+        typing.Tuple: SimpleDecoder[tuple](tuple),  # type: ignore
+        typing.Set: SimpleDecoder[set](set),
+        typing.FrozenSet: SimpleDecoder[frozenset](frozenset),
+        typing.Deque: SimpleDecoder[typing.Deque](typing.Deque),
+        typing.AnyStr: SimpleDecoder[str](str),  # type: ignore
+        decimal.Decimal: SimpleDecoder[decimal.Decimal](decimal.Decimal),
+        datetime.time: SimpleDecoder[datetime.time](parse_iso_time),
+        datetime.date: SimpleDecoder[datetime.date](parse_iso_date),
+        datetime.datetime: SimpleDecoder[datetime.datetime](parse_iso_datetime),
+        datetime.timedelta: SimpleDecoder[datetime.timedelta](parse_iso_duration),
+        PurePath: SimpleDecoder[PurePath](PurePath),
+        PureWindowsPath: SimpleDecoder[PureWindowsPath](PureWindowsPath),
+        PurePosixPath: SimpleDecoder[PurePosixPath](PurePosixPath),
+        Path: SimpleDecoder[Path](Path),
+        PosixPath: SimpleDecoder[PosixPath](PosixPath),
+        WindowsPath: SimpleDecoder[WindowsPath](WindowsPath),
+        Pattern: SimpleDecoder[Pattern](decode_regex_from_string),
+        re.Pattern: SimpleDecoder[re.Pattern](decode_regex_from_string),
+        IPv4Address: SimpleDecoder[IPv4Address](IPv4Address),
+        IPv6Address: SimpleDecoder[IPv6Address](IPv6Address),
+        UUID: SimpleDecoder[UUID](UUID),
     }
 )
 
@@ -321,7 +330,7 @@ class ClassDecoder(TypeDecoder):
 
     def __init__(self, class_name: Type, extra_decoders: TypeDecoders = None):
         self.class_name = class_name
-        self._schema = create_schema(class_name)
+        self._schema = create_schema(class_name)  # type: ignore
         self._extra_decoders = extra_decoders
 
     def decode(self, value: StateObject) -> Any:
@@ -440,7 +449,9 @@ _supported_generics = {
 
 
 @lru_cache(maxsize=None)
-def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module: Any = None) -> TypeDecoder:
+def build_type_decoder(
+    a_type: Type, extra_decoders: TypeDecoders = None, module: Any = None, force: bool = False
+) -> TypeDecoder:
     if extra_decoders and a_type in extra_decoders:
         return extra_decoders[a_type]
 
@@ -472,7 +483,7 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         return TypedDictDecoder(origin_type, extra_decoders)
 
     if is_class(origin_type) and is_user_string(origin_type):
-        return ProxyDecoder[origin_type](origin_type)  # type: ignore
+        return SimpleDecoder[origin_type](origin_type)  # type: ignore
 
     if origin_type is Union:
         type_args = get_type_args(a_type)
@@ -505,6 +516,8 @@ def build_type_decoder(a_type: Type, extra_decoders: TypeDecoders = None, module
         return OptionalTypeDecoder(build_type_decoder(unpack_optional(a_type)))  # type: ignore
 
     if origin_type not in _supported_generics:
+        if force and is_class(origin_type):
+            return Decoder[origin_type](extra_decoders)  # type: ignore
         raise DecoderError.invalid_type(a_type)
 
     type_attributes: List[Union[TypeDecoder, Any]] = [
@@ -551,7 +564,10 @@ class Decoder(Generic[T]):
             else:
                 value = self._decoders[prop.name].decode(obj[key])
 
-            setattr(instance, prop.name, value)
+            try:
+                setattr(instance, prop.name, value)
+            except AttributeError:
+                setattr(instance, f"_{prop.name}", value)
 
         return instance
 
@@ -559,7 +575,7 @@ class Decoder(Generic[T]):
         schema: TypeSchema = getattr(self.__generic__, _PROPERTIES)
 
         return {
-            prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders)  # type: ignore
+            prop.name: build_type_decoder(prop.type, extra_decoders=self.type_decoders, force=True)  # type: ignore
             for prop in schema.values()
         }
 

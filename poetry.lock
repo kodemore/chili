@@ -187,13 +187,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "gaffe"
-version = "0.2.2"
+version = "0.3.0"
 description = "Simple structured exceptions for python."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "gaffe-0.2.2-py3-none-any.whl", hash = "sha256:3d3069dc19348dd3ef84fd4b6af9f8a68d91d63fac2e66abae46146a98340699"},
-    {file = "gaffe-0.2.2.tar.gz", hash = "sha256:bdcf88cb35eba7ce81073e80f48ee14859c31118b5ffc1c3d4637c5a4622fa7b"},
+    {file = "gaffe-0.3.0-py3-none-any.whl", hash = "sha256:fce5ad7cc5b2b6596775220db88ad54767cb32e5d589dfe1ca356ae7dc5c15e9"},
+    {file = "gaffe-0.3.0.tar.gz", hash = "sha256:1c09015fc8ff0343e8c94e37cfc4d24b92dd6c2e0e7cba87bea210eeab68ee3f"},
 ]
 
 [[package]]
@@ -416,13 +416,13 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pytest"
-version = "7.4.2"
+version = "7.4.3"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-7.4.2-py3-none-any.whl", hash = "sha256:1d881c6124e08ff0a1bb75ba3ec0bfd8b5354a01c194ddd5a0a870a48d99b002"},
-    {file = "pytest-7.4.2.tar.gz", hash = "sha256:a766259cfab564a2ad52cb1aae1b881a75c3eb7e34ca3779697c23ed47c47069"},
+    {file = "pytest-7.4.3-py3-none-any.whl", hash = "sha256:0d009c083ea859a71b76adf7c1d502e4bc170b80a8ef002da5806527b9591fac"},
+    {file = "pytest-7.4.3.tar.gz", hash = "sha256:d989d136982de4e3b29dabcc838ad581c64e8ed52c11fbe86ddebd9da0818cd5"},
 ]
 
 [package.dependencies]
@@ -524,13 +524,13 @@ files = [
 
 [[package]]
 name = "tomlkit"
-version = "0.12.1"
+version = "0.12.2"
 description = "Style preserving TOML library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tomlkit-0.12.1-py3-none-any.whl", hash = "sha256:712cbd236609acc6a3e2e97253dfc52d4c2082982a88f61b640ecf0817eab899"},
-    {file = "tomlkit-0.12.1.tar.gz", hash = "sha256:38e1ff8edb991273ec9f6181244a6a391ac30e9f5098e7535640ea6be97a7c86"},
+    {file = "tomlkit-0.12.2-py3-none-any.whl", hash = "sha256:eeea7ac7563faeab0a1ed8fe12c2e5a51c61f933f2502f7e9db0241a65163ad0"},
+    {file = "tomlkit-0.12.2.tar.gz", hash = "sha256:df32fab589a81f0d7dc525a4267b6d7a64ee99619cbd1eeb0fae32c1dd426977"},
 ]
 
 [[package]]
@@ -631,4 +631,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "4797c68511996d9895d2ee076e46e286f7bbef98755106eb5eb54df4b3aec0fe"
+content-hash = "77e29e034f7e6ab5b681763b78f66509807b44da463781fb9f44ec7a26350f2e"

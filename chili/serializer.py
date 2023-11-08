@@ -50,12 +50,12 @@ class Serializer(Encoder, Decoder, Generic[T]):
 
 def serializable(_cls=None, in_mapper: Optional[Mapper] = None, out_mapper: Optional[Mapper] = None) -> Any:
     def _decorate(cls) -> Type[C]:
-        if not hasattr(cls, _PROPERTIES):
-            setattr(cls, _PROPERTIES, create_schema(cls))
-            if in_mapper is not None:
-                setattr(cls, _DECODE_MAPPER, in_mapper)
-            if out_mapper is not None:
-                setattr(cls, _ENCODE_MAPPER, out_mapper)
+
+        setattr(cls, _PROPERTIES, create_schema(cls))
+        if in_mapper is not None:
+            setattr(cls, _DECODE_MAPPER, in_mapper)
+        if out_mapper is not None:
+            setattr(cls, _ENCODE_MAPPER, out_mapper)
 
         setattr(cls, _DECODABLE, True)
         setattr(cls, _ENCODABLE, True)
