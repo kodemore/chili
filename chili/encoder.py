@@ -446,7 +446,7 @@ class Encoder(Generic[T]):
     def __init__(self, encoders: Union[Dict, TypeEncoders] = None, mapper: Optional[Mapper] = None):
         if encoders and not isinstance(encoders, TypeEncoders):
             encoders = TypeEncoders(encoders)
-        self.mapper = mapper
+        self.encode_mapper = mapper
         self.type_encoders = encoders
 
     def encode(self, obj: T) -> StateObject:
@@ -466,8 +466,8 @@ class Encoder(Generic[T]):
         if hasattr(self.__generic__, _ENCODE_MAPPER):
             mapper = getattr(self.__generic__, _ENCODE_MAPPER)
             return mapper.map(result)
-        elif self.mapper:
-            return self.mapper.map(result)
+        elif self.encode_mapper:
+            return self.encode_mapper.map(result)
 
         return result
 

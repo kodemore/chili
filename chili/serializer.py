@@ -24,9 +24,15 @@ T = TypeVar("T")
 class Serializer(Encoder, Decoder, Generic[T]):
     __generic__: Type[T]
 
-    def __init__(self, type_encoders: Any = None, type_decoders: Any = None):
-        Encoder.__init__(self, type_encoders)
-        Decoder.__init__(self, type_decoders)
+    def __init__(
+        self,
+        type_encoders: Any = None,
+        type_decoders: Any = None,
+        encode_mapper: Optional[Mapper] = None,
+        decode_mapper: Optional[Mapper] = None,
+    ):
+        Encoder.__init__(self, type_encoders, mapper=encode_mapper)
+        Decoder.__init__(self, type_decoders, mapper=decode_mapper)
 
     @classmethod
     def __class_getitem__(cls, item: Type[T]) -> Type[Serializer]:  # noqa: E501
