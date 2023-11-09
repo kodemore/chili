@@ -4,6 +4,7 @@ import collections
 import datetime
 import decimal
 import re
+import sys
 import typing
 from abc import abstractmethod
 from base64 import b64encode
@@ -38,6 +39,12 @@ from chili.typing import (
     resolve_forward_reference,
     unpack_optional,
 )
+
+
+if sys.version_info >= (3, 10):
+    from types import UnionType
+else:
+    UnionType = None
 
 from .error import EncoderError
 from .iso_datetime import timedelta_to_iso_duration
@@ -394,7 +401,7 @@ def build_type_encoder(
     if is_class(origin_type) and is_user_string(origin_type):
         return SimpleEncoder[str](str)
 
-    if origin_type is Union:
+    if origin_type is Union or (UnionType and isinstance(origin_type, UnionType)):
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
             return OptionalTypeEncoder(build_type_encoder(type_args[0], extra_encoders))  # type: ignore

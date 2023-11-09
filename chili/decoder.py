@@ -4,6 +4,7 @@ import collections
 import datetime
 import decimal
 import re
+import sys
 import typing
 from abc import abstractmethod
 from base64 import b64decode
@@ -55,6 +56,11 @@ from chili.typing import (
     resolve_forward_reference,
     unpack_optional,
 )
+
+if sys.version_info >= (3, 10):
+    from types import UnionType
+else:
+    UnionType = None
 
 from .error import DecoderError
 from .iso_datetime import parse_iso_date, parse_iso_datetime, parse_iso_duration, parse_iso_time
@@ -485,7 +491,7 @@ def build_type_decoder(
     if is_class(origin_type) and is_user_string(origin_type):
         return SimpleDecoder[origin_type](origin_type)  # type: ignore
 
-    if origin_type is Union:
+    if origin_type is Union or (UnionType and isinstance(origin_type, UnionType)):
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):  # type: ignore
             return OptionalTypeDecoder(

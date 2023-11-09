@@ -1,6 +1,6 @@
 from typing import NewType
-
 from chili import Decoder, Encoder, decodable, encodable
+import sys
 
 
 def test_can_encode_newtype_type() -> None:
