@@ -72,8 +72,12 @@ def is_optional(type_name: Type) -> bool:
 
 
 def is_newtype(type_name: Type) -> bool:
+    if sys.version_info >= (3, 10):
+        return isinstance(type_name, NewType)  # type: ignore
+
     if not hasattr(type_name, "__qualname__"):
         return False
+
     if type_name.__qualname__ != "NewType.<locals>.new_type":
         return False
 
