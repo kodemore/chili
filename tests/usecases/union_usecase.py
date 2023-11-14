@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Optional, Union
 
 from chili import decode, encode
 
@@ -88,3 +88,48 @@ def test_new_union_style_encode() -> None:
 
     # then
     assert result == {"address": "simple@email.com", "label": ""}
+
+
+def test_can_decode_nested_union() -> None:
+    # given
+    @dataclass
+    class HomeAddress:
+        home_street: str
+        number: Optional[int] = 0
+
+    @dataclass
+    class OfficeAddress:
+        office_street: str
+        number: Optional[int] = 0
+
+    @dataclass
+    class Address:
+        street: str
+        number: Optional[int] = 0
+
+    @dataclass
+    class Person:
+        name: str
+        address: HomeAddress | OfficeAddress | Address
+
+    data_office = {
+        "name": "Bob",
+        "address": {"office_street": "street"},
+    }
+
+    data_home = {
+        "name": "Bob",
+        "address": {"home_street": "home"},
+    }
+
+    # when
+    decoded = decode(data_office, Person)
+
+    # then
+    assert isinstance(decoded.address, OfficeAddress)
+
+    # when
+    decoded = decode(data_home, Person)
+
+    # then
+    assert isinstance(decoded.address, HomeAddress)
