@@ -323,14 +323,30 @@ class UnionDecoder(TypeDecoder):
 
         if passed_type is dict:
             provided_fields = set(value.keys())
-            for class_name, decoder in self._type_decoders.items():
-                try:
-                    if is_decodable(class_name) or is_dataclass(class_name) or self.force:
-                        expected_fields = set(get_non_optional_fields(class_name))
-                        if provided_fields.issubset(expected_fields):
-                            return decoder.decode(value)
-                        continue
+            if self.force:
+                decoders = self._type_decoders
+            else:
+                decoders = {
+                    class_name: decoder
+                    for class_name, decoder in self._type_decoders.items()
+                    if is_decodable(class_name) or is_dataclass(class_name)
+                }
+            # Greedy matching
+            for class_name, decoder in decoders.items():
+                expected_fields = set(get_non_optional_fields(class_name))
+                if not provided_fields.issubset(expected_fields):
                     continue
+                try:
+                    return decoder.decode(value)
+                except Exception:
+                    continue
+            # Non-greedy matching
+            for class_name, decoder in decoders.items():
+                expected_fields = set(get_non_optional_fields(class_name))
+                if not expected_fields.issubset(provided_fields):
+                    continue
+                try:
+                    return decoder.decode(value)
                 except Exception:
                     continue
 
