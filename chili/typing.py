@@ -7,7 +7,7 @@ from dataclasses import MISSING, Field, InitVar, is_dataclass
 from enum import Enum
 from functools import lru_cache
 from inspect import isclass as is_class
-from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union
+from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union, get_type_hints
 
 from chili.error import SerialisationError
 
@@ -27,6 +27,7 @@ __all__ = [
     "get_origin_type",
     "get_parameters_map",
     "get_type_args",
+    "get_type_hints",
     "get_type_parameters",
     "is_class",
     "is_dataclass",
@@ -41,6 +42,15 @@ __all__ = [
     "TypeSchema",
     "Property",
 ]
+
+
+def get_non_optional_fields(type_name: Type) -> List[str]:
+    if is_encodable(type_name):
+        schema = getattr(type_name, _ENCODABLE)
+    else:
+        schema = create_schema(type_name)  # type: ignore
+
+    return [field.name for field in schema.values() if not is_optional(field.type)]
 
 
 def get_origin_type(type_name: Type) -> Optional[Type]:

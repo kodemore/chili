@@ -17,7 +17,7 @@ pylint:
 	poetry run pylint chili
 
 mypy:
-	poetry run mypy --install-types --non-interactive .
+	poetry run mypy --install-types --non-interactive chili
 
 bandit:
 	poetry run bandit -r . -x ./tests,./test,./.venv

@@ -40,7 +40,6 @@ from chili.typing import (
     unpack_optional,
 )
 
-
 if sys.version_info >= (3, 10):
     from types import UnionType
 else:
@@ -341,16 +340,17 @@ class OptionalTypeEncoder(TypeEncoder):
 
 
 class UnionEncoder(TypeEncoder):
-    def __init__(self, supported_types: List[Type], extra_encoders: TypeEncoders = None):
+    def __init__(self, supported_types: List[Type], extra_encoders: TypeEncoders = None, force: bool = False):
         self.supported_types = supported_types
         self._extra_encoders = extra_encoders
+        self.force = force
 
     def encode(self, value: Any) -> Any:
         value_type = type(value)
         if value_type not in self.supported_types:
             raise EncoderError.invalid_input
 
-        return build_type_encoder(value_type, self._extra_encoders).encode(value)  # type: ignore
+        return build_type_encoder(value_type, self._extra_encoders, force=self.force).encode(value)  # type: ignore
 
 
 _supported_generics = {
@@ -405,7 +405,7 @@ def build_type_encoder(
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
             return OptionalTypeEncoder(build_type_encoder(type_args[0], extra_encoders))  # type: ignore
-        return UnionEncoder(type_args, extra_encoders)
+        return UnionEncoder(type_args, extra_encoders, force=force)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
         resolved_reference = resolve_forward_reference(module, a_type)

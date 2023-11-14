@@ -40,6 +40,7 @@ from chili.typing import (
     UNDEFINED,
     TypeSchema,
     create_schema,
+    get_non_optional_fields,
     get_origin_type,
     get_parameters_map,
     get_type_args,
@@ -286,7 +287,7 @@ class UnionDecoder(TypeDecoder):
     }
     _CASTABLES_TYPES = {decimal.Decimal}
 
-    def __init__(self, valid_types: List[Type]):
+    def __init__(self, valid_types: List[Type], extra_decoders: TypeDecoders = None, force: bool = False):
         self.valid_types = valid_types
         self._type_decoders = {}
 
@@ -294,7 +295,11 @@ class UnionDecoder(TypeDecoder):
             if a_type in self._PRIMITIVE_TYPES:
                 self._type_decoders[a_type] = a_type
                 continue
-            self._type_decoders[a_type] = build_type_decoder(a_type)  # type: ignore
+            self._type_decoders[a_type] = build_type_decoder(
+                a_type, extra_decoders=extra_decoders, force=force  # type: ignore
+            )
+
+        self.force = force
 
     def decode(self, value: Any) -> Any:
         passed_type = type(value)
@@ -317,13 +322,15 @@ class UnionDecoder(TypeDecoder):
                     continue
 
         if passed_type is dict:
-            value_keys = value.keys()
-            for decodable, decoder in self._type_decoders.items():
+            provided_fields = set(value.keys())
+            for class_name, decoder in self._type_decoders.items():
                 try:
-                    if not is_decodable(decodable) and value_keys == get_type_hints(decodable).keys():
-                        return decoder.decode(value)
-                    if is_decodable(decodable) and value_keys == getattr(decodable, _PROPERTIES, {}).keys():
-                        return decoder.decode(value)
+                    if is_decodable(class_name) or is_dataclass(class_name) or self.force:
+                        expected_fields = set(get_non_optional_fields(class_name))
+                        if provided_fields.issubset(expected_fields):
+                            return decoder.decode(value)
+                        continue
+                    continue
                 except Exception:
                     continue
 
@@ -497,7 +504,7 @@ def build_type_decoder(
             return OptionalTypeDecoder(
                 build_type_decoder(a_type=type_args[0], extra_decoders=extra_decoders)  # type: ignore
             )
-        return UnionDecoder(type_args)
+        return UnionDecoder(type_args, extra_decoders=extra_decoders, force=force)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
         resolved_reference = resolve_forward_reference(module, a_type)
