@@ -239,10 +239,11 @@ class ClassEncoder(TypeEncoder):
     _fields: Dict[str, TypeEncoder]
     _schema: TypeSchema
 
-    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None, force: bool = False):
         self.class_name = class_name
         self._extra_encoders = extra_encoders
         self._schema = create_schema(class_name)  # type: ignore
+        self.force = force
 
     def encode(self, value: Any) -> StateObject:
         if not isinstance(value, self.class_name):
@@ -263,14 +264,15 @@ class ClassEncoder(TypeEncoder):
         return {name: self._build_type_encoder(field.type) for name, field in self._schema.items()}
 
     def _build_type_encoder(self, a_type: Type) -> TypeEncoder:
-        return build_type_encoder(a_type, self._extra_encoders, self.class_name.__module__)  # type: ignore
+        return build_type_encoder(a_type, self._extra_encoders, self.class_name.__module__, self.force)  # type: ignore
 
 
 class GenericClassEncoder(ClassEncoder):
-    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None, force: bool = False):
         self._generic_type = class_name
         self._extra_encoders = extra_encoders
         self._generic_parameters = get_parameters_map(class_name)
+        self.force = force
         type_: Type = get_origin_type(class_name)  # type: ignore
         super().__init__(type_)
 
@@ -279,6 +281,7 @@ class GenericClassEncoder(ClassEncoder):
             map_generic_type(a_type, self._generic_parameters),
             self._extra_encoders,
             self._generic_type.__module__,
+            self.force
         )
 
 
@@ -294,11 +297,12 @@ class EnumEncoder(TypeEncoder, Generic[E]):
 
 
 class NamedTupleEncoder(TypeEncoder):
-    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None, force: bool = False):
         self.type = class_name
         self._is_typed = hasattr(class_name, "__annotations__")
         self._arg_encoders: List[TypeEncoder] = []
         self._extra_encoders = extra_encoders
+        self.force = force
         if self._is_typed:
             self._build()
 
@@ -314,15 +318,16 @@ class NamedTupleEncoder(TypeEncoder):
     def _build(self) -> None:
         field_types = self.type.__annotations__
         for item_type in field_types.values():
-            self._arg_encoders.append(build_type_encoder(item_type, self._extra_encoders, self.type.__module__))
+            self._arg_encoders.append(build_type_encoder(item_type, self._extra_encoders, self.type.__module__, self.force))
 
 
 class TypedDictEncoder(TypeEncoder):
-    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None):
+    def __init__(self, class_name: Type, extra_encoders: TypeEncoders = None, force: bool = False):
         self.type = class_name
         self._key_encoders = {}
+        self.force = force
         for key_name, key_type in class_name.__annotations__.items():
-            self._key_encoders[key_name] = build_type_encoder(key_type, extra_encoders, class_name.__module__)
+            self._key_encoders[key_name] = build_type_encoder(key_type, extra_encoders, class_name.__module__, self.force)
 
     def encode(self, value: dict) -> dict:
         return {key: self._key_encoders[key].encode(item) for key, item in value.items()}
@@ -384,7 +389,7 @@ def build_type_encoder(
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore
             return GenericClassEncoder(a_type)
-        return ClassEncoder(a_type, extra_encoders)
+        return ClassEncoder(a_type, extra_encoders, force)
 
     if origin_type is None:
         origin_type = a_type
@@ -393,10 +398,10 @@ def build_type_encoder(
         return EnumEncoder(origin_type)
 
     if is_class(origin_type) and is_named_tuple(origin_type):
-        return NamedTupleEncoder(origin_type, extra_encoders)
+        return NamedTupleEncoder(origin_type, extra_encoders, force)
 
     if is_class(origin_type) and is_typed_dict(origin_type):
-        return TypedDictEncoder(origin_type, extra_encoders)
+        return TypedDictEncoder(origin_type, extra_encoders, force)
 
     if is_class(origin_type) and is_user_string(origin_type):
         return SimpleEncoder[str](str)
@@ -404,7 +409,7 @@ def build_type_encoder(
     if origin_type is Union or (UnionType and isinstance(origin_type, UnionType)):
         type_args = get_type_args(a_type)
         if len(type_args) == 2 and type_args[-1] is type(None):
-            return OptionalTypeEncoder(build_type_encoder(type_args[0], extra_encoders))  # type: ignore
+            return OptionalTypeEncoder(build_type_encoder(type_args[0], extra_encoders, module, force))  # type: ignore
         return UnionEncoder(type_args, extra_encoders, force=force)
 
     if isinstance(a_type, typing.ForwardRef) and module is not None:
@@ -423,10 +428,10 @@ def build_type_encoder(
     if isinstance(a_type, TypeVar):
         if a_type.__bound__ is None:
             raise EncoderError.invalid_type(a_type)
-        return build_type_encoder(a_type.__bound__, extra_encoders, module)
+        return build_type_encoder(a_type.__bound__, extra_encoders, module, force)
 
     if is_newtype(a_type):
-        return build_type_encoder(a_type.__supertype__, extra_encoders, module)
+        return build_type_encoder(a_type.__supertype__, extra_encoders, module, force)
 
     if origin_type not in _supported_generics:
         if is_class(origin_type) and force:
@@ -434,7 +439,7 @@ def build_type_encoder(
         raise EncoderError.invalid_type(type=a_type)
 
     type_attributes: List[TypeEncoder] = [
-        build_type_encoder(subtype, extra_encoders=extra_encoders, module=module)  # type: ignore
+        build_type_encoder(subtype, extra_encoders=extra_encoders, module=module, force=force)  # type: ignore
         if subtype is not ...
         else ...  # noqa: E501
         for subtype in get_type_args(a_type)
