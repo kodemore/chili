@@ -384,7 +384,7 @@ def build_type_encoder(
     if origin_type is None and is_dataclass(a_type):
         if issubclass(a_type, Generic):  # type: ignore
             raise EncoderError.invalid_type
-        return ClassEncoder(a_type, extra_encoders)
+        return ClassEncoder(a_type, extra_encoders, force)
 
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore

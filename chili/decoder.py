@@ -496,7 +496,7 @@ def build_type_decoder(
     if origin_type is None and is_dataclass(a_type):
         if issubclass(a_type, Generic):  # type: ignore
             raise DecoderError.invalid_type
-        return ClassDecoder(a_type, extra_decoders)
+        return ClassDecoder(a_type, extra_decoders, force)
 
     if origin_type and is_dataclass(origin_type):
         if issubclass(origin_type, Generic):  # type: ignore
