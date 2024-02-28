@@ -252,4 +252,4 @@ def test_fail_to_decode_incomplete_object() -> None:
 
     # when
     with pytest.raises(DecoderError.missing_property):
-        pet = decode(pet_data, Pet)
+        decode(pet_data, Pet)
