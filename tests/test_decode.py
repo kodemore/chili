@@ -248,7 +248,7 @@ def test_fail_to_decode_incomplete_object() -> None:
         age: int
         tags: List[Tag]
 
-    pet_data = {"name": "Bobik", "age": 3, "tags": [{"_": "value"}]}
+    pet_data = {"name": "Bobik", "age": 3, "tags": [{"_": "invalid_tag"}]}
 
     # when
     with pytest.raises(DecoderError.missing_property):
