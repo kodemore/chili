@@ -596,7 +596,7 @@ class Decoder(Generic[T]):
                 if is_optional(prop.type):
                     value = prop.default_value
                 else:
-                    raise DecoderError.missing_property(key=key)
+                    raise DecoderError.missing_property(f"Property `{key}` missing from object `{obj}`")
             else:
                 value = self._decoders[prop.name].decode(obj[key])
 
