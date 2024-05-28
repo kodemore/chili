@@ -253,3 +253,17 @@ def test_fail_to_decode_incomplete_object() -> None:
     # when
     with pytest.raises(DecoderError.missing_property):
         pet = decode(pet_data, Pet)
+
+
+def test_can_decode_new_optional_type_notation() -> None:
+    @decodable
+    class Tag:
+        value: int | None
+
+        def __init__(self, value: str):
+            self.value = value
+
+
+    tag = decode({}, Tag)
+
+    assert tag.value is None

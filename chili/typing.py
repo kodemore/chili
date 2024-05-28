@@ -8,8 +8,16 @@ from enum import Enum
 from functools import lru_cache
 from inspect import isclass as is_class
 from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union, get_type_hints
-
 from chili.error import SerialisationError
+
+
+try:
+    from types import UnionType
+    _SUPPORT_NEW_UNION = True
+except ImportError:
+    _SUPPORT_NEW_UNION = False
+    UnionType = object()
+
 
 AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
@@ -74,8 +82,11 @@ def is_serialisable(type_name: Type) -> bool:
 
 
 def is_optional(type_name: Type) -> bool:
+    is_new_union = False
+    if _SUPPORT_NEW_UNION:
+        is_new_union = type(type_name) is UnionType
     return (
-        get_origin_type(type_name) is Union
+        (get_origin_type(type_name) is Union or type(type_name) is Union or is_new_union)
         and bool(get_type_args(type_name))
         and get_type_args(type_name)[-1] is type(None)  # noqa
     )
