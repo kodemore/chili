@@ -1,9 +1,10 @@
 import datetime
 import enum
 import re
+import sys
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Generic, List, Optional, Pattern, Set, Tuple, TypedDict, TypeVar
+from typing import Generic, List, Optional, Set, Tuple, TypedDict, TypeVar
 
 import pytest
 
@@ -298,6 +299,7 @@ def test_can_encode_regex_with_flags_into_string() -> None:
     assert result == f"/{pattern_str}/imsx"
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 10))
 def test_can_encode_new_optional_type_notation() -> None:
     # given
     @encodable

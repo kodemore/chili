@@ -1,4 +1,5 @@
 import re
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, List, Optional, Pattern, TypeVar, Union
@@ -255,6 +256,7 @@ def test_fail_to_decode_incomplete_object() -> None:
         pet = decode(pet_data, Pet)
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 10))
 def test_can_decode_new_optional_type_notation() -> None:
     # given
     @decodable
