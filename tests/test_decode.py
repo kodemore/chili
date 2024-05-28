@@ -256,13 +256,21 @@ def test_fail_to_decode_incomplete_object() -> None:
 
 
 def test_can_decode_new_optional_type_notation() -> None:
+    # given
     @decodable
     class Tag:
         value: int | None
 
-        def __init__(self, value: str):
+        def __init__(self, value: int | None):
             self.value = value
 
-    tag = decode({}, Tag)
+    value = {}
+    alt_value = {"value": 11}
 
-    assert tag.value is None
+    # when
+    result = decode(value, Tag)
+    alt_result = decode(alt_value, Tag)
+
+    # then
+    assert result.value is None
+    assert alt_result.value == 11

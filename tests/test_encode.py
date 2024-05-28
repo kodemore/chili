@@ -296,3 +296,24 @@ def test_can_encode_regex_with_flags_into_string() -> None:
 
     # then
     assert result == f"/{pattern_str}/imsx"
+
+
+def test_can_encode_new_optional_type_notation() -> None:
+    # given
+    @encodable
+    class Tag:
+        value: int | None
+
+        def __init__(self, value: int | None):
+            self.value = value
+
+    tag = Tag(None)
+    alt_tag = Tag(11)
+
+    # when
+    result = encode(tag)
+    alt_result = encode(alt_tag)
+
+    # then
+    assert result == {"value": None}
+    assert alt_result == {"value": 11}
