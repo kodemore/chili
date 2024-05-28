@@ -256,7 +256,7 @@ def test_fail_to_decode_incomplete_object() -> None:
         pet = decode(pet_data, Pet)
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 10), reason="Unsupported python version")
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Unsupported python version")
 def test_can_decode_new_optional_type_notation() -> None:
     # given
     @decodable

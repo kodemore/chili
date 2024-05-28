@@ -299,7 +299,7 @@ def test_can_encode_regex_with_flags_into_string() -> None:
     assert result == f"/{pattern_str}/imsx"
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 10), reason="Unsupported python version")
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Unsupported python version")
 def test_can_encode_new_optional_type_notation() -> None:
     # given
     @encodable
