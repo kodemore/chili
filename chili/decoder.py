@@ -405,7 +405,7 @@ class GenericClassDecoder(ClassDecoder):
             map_generic_type(a_type, self._generic_parameters),
             self._extra_decoders,
             self._generic_type.__module__,
-            self.force
+            self.force,
         )
 
 
@@ -444,7 +444,9 @@ class NamedTupleDecoder(TypeDecoder):
     def _build(self) -> None:
         field_types = self.class_name.__annotations__
         for item_type in field_types.values():
-            self._arg_decoders.append(build_type_decoder(item_type, self._extra_decoders, self.class_name.__module__, self.force))
+            self._arg_decoders.append(
+                build_type_decoder(item_type, self._extra_decoders, self.class_name.__module__, self.force)
+            )
 
 
 class TypedDictDecoder(TypeDecoder):
@@ -453,7 +455,9 @@ class TypedDictDecoder(TypeDecoder):
         self._key_decoders = {}
         self._extra_decoders = extra_decoders
         for key_name, key_type in class_name.__annotations__.items():
-            self._key_decoders[key_name] = build_type_decoder(key_type, self._extra_decoders, class_name.__module__, force)
+            self._key_decoders[key_name] = build_type_decoder(
+                key_type, self._extra_decoders, class_name.__module__, force
+            )
 
     def decode(self, value: dict) -> dict:
         return {key: self._key_decoders[key].decode(item) for key, item in value.items()}
@@ -546,7 +550,9 @@ def build_type_decoder(
         return Decoder[origin_type](decoders=extra_decoders)  # type: ignore
 
     if is_optional(a_type):
-        return OptionalTypeDecoder(build_type_decoder(unpack_optional(a_type), extra_decoders, module, force))  # type: ignore
+        return OptionalTypeDecoder(
+            build_type_decoder(unpack_optional(a_type), extra_decoders, module, force)  # type: ignore
+        )
 
     if origin_type not in _supported_generics:
         if force and is_class(origin_type):

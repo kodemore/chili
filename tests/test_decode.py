@@ -1,4 +1,5 @@
 import re
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, List, Optional, Pattern, TypeVar, Union
@@ -200,7 +201,7 @@ def test_decode_regex_with_flags_from_str() -> None:
 
     # then
     assert isinstance(result, Pattern)
-    assert result.pattern == "\d+"
+    assert result.pattern == "\\d+"
     assert result.flags & re.I
     assert result.flags & re.M
     assert result.flags & re.S
@@ -253,3 +254,25 @@ def test_fail_to_decode_incomplete_object() -> None:
     # when
     with pytest.raises(DecoderError.missing_property):
         pet = decode(pet_data, Pet)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Unsupported python version")
+def test_can_decode_new_optional_type_notation() -> None:
+    # given
+    @decodable
+    class Tag:
+        value: int | None
+
+        def __init__(self, value: int | None):
+            self.value = value
+
+    value = {}
+    alt_value = {"value": 11}
+
+    # when
+    result = decode(value, Tag)
+    alt_result = decode(alt_value, Tag)
+
+    # then
+    assert result.value is None
+    assert alt_result.value == 11
