@@ -281,7 +281,7 @@ class GenericClassEncoder(ClassEncoder):
             map_generic_type(a_type, self._generic_parameters),
             self._extra_encoders,
             self._generic_type.__module__,
-            self.force
+            self.force,
         )
 
 
@@ -318,7 +318,9 @@ class NamedTupleEncoder(TypeEncoder):
     def _build(self) -> None:
         field_types = self.type.__annotations__
         for item_type in field_types.values():
-            self._arg_encoders.append(build_type_encoder(item_type, self._extra_encoders, self.type.__module__, self.force))
+            self._arg_encoders.append(
+                build_type_encoder(item_type, self._extra_encoders, self.type.__module__, self.force)
+            )
 
 
 class TypedDictEncoder(TypeEncoder):
@@ -327,7 +329,9 @@ class TypedDictEncoder(TypeEncoder):
         self._key_encoders = {}
         self.force = force
         for key_name, key_type in class_name.__annotations__.items():
-            self._key_encoders[key_name] = build_type_encoder(key_type, extra_encoders, class_name.__module__, self.force)
+            self._key_encoders[key_name] = build_type_encoder(
+                key_type, extra_encoders, class_name.__module__, self.force
+            )
 
     def encode(self, value: dict) -> dict:
         return {key: self._key_encoders[key].encode(item) for key, item in value.items()}

@@ -8,11 +8,12 @@ from enum import Enum
 from functools import lru_cache
 from inspect import isclass as is_class
 from typing import Any, Callable, ClassVar, Dict, List, NewType, Optional, Type, Union, get_type_hints
+
 from chili.error import SerialisationError
 
-
 try:
-    from types import UnionType
+    from types import UnionType  # type: ignore
+
     _SUPPORT_NEW_UNION = True
 except ImportError:
     _SUPPORT_NEW_UNION = False

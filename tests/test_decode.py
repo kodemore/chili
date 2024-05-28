@@ -200,7 +200,7 @@ def test_decode_regex_with_flags_from_str() -> None:
 
     # then
     assert isinstance(result, Pattern)
-    assert result.pattern == "\d+"
+    assert result.pattern == "\\d+"
     assert result.flags & re.I
     assert result.flags & re.M
     assert result.flags & re.S
@@ -262,7 +262,6 @@ def test_can_decode_new_optional_type_notation() -> None:
 
         def __init__(self, value: str):
             self.value = value
-
 
     tag = decode({}, Tag)
 
